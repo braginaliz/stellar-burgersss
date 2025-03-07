@@ -7,7 +7,7 @@ import {
   removeIngredient,
   setBun,
   setOrderRequest,
-  setOrderModalData,
+  setOrderModalData
 } from '../../slice/ConstructorSlice';
 
 export const BurgerConstructor: FC = () => {
@@ -19,7 +19,7 @@ export const BurgerConstructor: FC = () => {
 
   const constructorItems = {
     bun: bun,
-    ingredients: ingredients,
+    ingredients: ingredients
   };
 
   const onOrderClick = () => {
@@ -37,7 +37,10 @@ export const BurgerConstructor: FC = () => {
   const price = useMemo(
     () =>
       (bun ? bun.price * 2 : 0) +
-      ingredients.reduce((s: number, v: TConstructorIngredient) => s + v.price, 0),
+      ingredients.reduce(
+        (s: number, v: TConstructorIngredient) => s + v.price,
+        0
+      ),
     [bun, ingredients]
   );
 

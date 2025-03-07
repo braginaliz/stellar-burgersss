@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useDispatch } from '../../services/store';
 import { fetchIngredients } from '../../slice/IngredientSlice';
@@ -35,13 +34,34 @@ const App = () => {
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
         <Route path='*' element={<NotFound404 />} />
-        <Route path='/profile' element={<IsAuthorized component={<Profile />} />} />
-        <Route path='/login' element={<NotAuthorized component={<Login />} />} />
-        <Route path='/register' element={<NotAuthorized component={<Register />} />} />
-        <Route path='/forgot-password' element={<NotAuthorized component={<ForgotPassword />} />} />
-        <Route path='/reset-password' element={<NotAuthorized component={<ResetPassword />} />} />
-        <Route path='/profile/orders' element={<IsAuthorized component={<ProfileOrders />} />} />
-        <Route path='/profile/orders/:number' element={<IsAuthorized component={<OrderInfo />} />} />
+        <Route
+          path='/profile'
+          element={<IsAuthorized component={<Profile />} />}
+        />
+        <Route
+          path='/login'
+          element={<NotAuthorized component={<Login />} />}
+        />
+        <Route
+          path='/register'
+          element={<NotAuthorized component={<Register />} />}
+        />
+        <Route
+          path='/forgot-password'
+          element={<NotAuthorized component={<ForgotPassword />} />}
+        />
+        <Route
+          path='/reset-password'
+          element={<NotAuthorized component={<ResetPassword />} />}
+        />
+        <Route
+          path='/profile/orders'
+          element={<IsAuthorized component={<ProfileOrders />} />}
+        />
+        <Route
+          path='/profile/orders/:number'
+          element={<IsAuthorized component={<OrderInfo />} />}
+        />
         <Route path='/feed/:number' element={<OrderInfo />} />
         <Route path='/ingredients/:id' element={<IngredientDetails />} />
       </Routes>

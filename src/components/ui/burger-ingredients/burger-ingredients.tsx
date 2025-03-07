@@ -28,7 +28,11 @@ export const BurgerIngredientsUI: FC<BurgerIngredientsUIProps> = memo(
           <Tab value='main' active={currentTab === 'main'} onClick={onTabClick}>
             Начинки
           </Tab>
-          <Tab value='sauce' active={currentTab === 'sauce'} onClick={onTabClick}>
+          <Tab
+            value='sauce'
+            active={currentTab === 'sauce'}
+            onClick={onTabClick}
+          >
             Соусы
           </Tab>
         </ul>

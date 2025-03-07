@@ -1,5 +1,5 @@
 import { useDispatch } from 'react-redux';
-import { addIngredient, setBun } from  '../../slice/ConstructorSlice';
+import { addIngredient, setBun } from '../../slice/ConstructorSlice';
 import { FC, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -10,14 +10,14 @@ export const BurgerIngredient: FC<TBurgerIngredientProps> = memo(
   ({ ingredient, count }) => {
     const location = useLocation();
     const dispatch = useDispatch();
-    
 
-    const handleAdd = () => { if (ingredient.type === 'bun') {
-      dispatch(setBun(ingredient));
-    } else {
-      dispatch(addIngredient(ingredient));
-    }
-  };
+    const handleAdd = () => {
+      if (ingredient.type === 'bun') {
+        dispatch(setBun(ingredient));
+      } else {
+        dispatch(addIngredient(ingredient));
+      }
+    };
 
     return (
       <BurgerIngredientUI
@@ -29,9 +29,3 @@ export const BurgerIngredient: FC<TBurgerIngredientProps> = memo(
     );
   }
 );
-
-
-
-
-
-    

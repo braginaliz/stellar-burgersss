@@ -13,36 +13,42 @@ export const initialState: TFeedState = {
   ordersList: [],
   totalCount: 0,
   totalTodayCount: 0,
-  error: null,
+  error: null
 };
 
-export const fetchFeedsData = createAsyncThunk('feeds/fetchFeedsData', async () => {
-  const response = await getFeedsApi();
-  return response; 
-});
+export const fetchFeedsData = createAsyncThunk(
+  'feeds/fetchFeedsData',
+  async () => {
+    const response = await getFeedsApi();
+    return response;
+  }
+);
 
 export const feedsSlice = createSlice({
   name: 'feeds',
   initialState,
   reducers: {
     clearError: (state) => {
-      state.error = null; 
-    },
+      state.error = null;
+    }
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchFeedsData.pending, (state) => {
-        state.error = null; 
+        state.error = null;
       })
-      .addCase(fetchFeedsData.fulfilled, (state, action: PayloadAction<TOrdersData>) => {
-        state.ordersList = action.payload.orders;
-        state.totalCount = action.payload.total;
-        state.totalTodayCount = action.payload.totalToday;
-      })
+      .addCase(
+        fetchFeedsData.fulfilled,
+        (state, action: PayloadAction<TOrdersData>) => {
+          state.ordersList = action.payload.orders;
+          state.totalCount = action.payload.total;
+          state.totalTodayCount = action.payload.totalToday;
+        }
+      )
       .addCase(fetchFeedsData.rejected, (state, action) => {
         state.error = action.error.message || 'Ошибка загрузки';
       });
-  },
+  }
 });
 
 export const { clearError } = feedsSlice.actions;

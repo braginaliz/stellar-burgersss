@@ -6,10 +6,8 @@ import { BurgerIngredients } from '../../components';
 import { BurgerConstructor } from '../../components';
 import { Preloader } from '../../components/ui';
 import { FC } from 'react';
-
-export const ConstructorPage: FC = () => {
-  /** TODO: взять переменную из стора */
-  const isIngredientsLoading = false;
+export const ConstructorPage = () => {
+  const isIngredientsLoading = useSelector((state) => state.ingredients.isLoading);
 
   return (
     <>

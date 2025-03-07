@@ -71,7 +71,6 @@ export const checkAuthorization = createAsyncThunk(
 );
 
 export const authSlice = createSlice({
-  
   name: 'authorization',
   initialState,
   reducers: {
@@ -109,13 +108,8 @@ export const authSlice = createSlice({
         state.user = null;
         state.isAuthorized = false;
       });
-  },   selectors: {
-    getUser: (state) => state.user,
-    getIsAuthChecked: (state) => state.isAuthorized
   }
-
 });
-
 
 export const { setAuthorization, setUser } = authSlice.actions;
 export const authReducer = authSlice.reducer;
@@ -125,5 +119,3 @@ export const isAuthorizedSelector = (state: { authorization: IUState }) =>
   state.authorization.isAuthorized;
 export const UsernameSelector = (state: { authorization: IUState }) =>
   state.authorization.user?.name;
-  export const { getUser, getIsAuthChecked } = authSlice.selectors;
-   

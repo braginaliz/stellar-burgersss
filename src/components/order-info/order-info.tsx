@@ -1,23 +1,27 @@
-import { FC, useMemo } from 'react';
+import { useEffect, FC, useMemo } from 'react';
+import { useDispatch, useSelector } from '../../services/store';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { fetchOrders } from 'src/slice/OrdersSlice';
+import { useParams } from 'react-router-dom';
 
 export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const dispatch = useDispatch();
+  const { number } = useParams<{ number: string }>();
 
-  const ingredients: TIngredient[] = [];
+  const { isLoading: isIngredientsLoading, items: ingredients } = useSelector(
+    (state) => state.ingredients
+  );
 
-  /* Готовим данные для отображения */
+  const { loading: isOrderLoading, orderModalData: orderData } = useSelector(
+    (state) => state.orders
+  );
+
+  useEffect(() => {
+    dispatch(fetchOrders(Number(number)));
+  }, [dispatch, number]);
+
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -29,18 +33,14 @@ export const OrderInfo: FC = () => {
 
     const ingredientsInfo = orderData.ingredients.reduce(
       (acc: TIngredientsWithCount, item) => {
-        if (!acc[item]) {
-          const ingredient = ingredients.find((ing) => ing._id === item);
-          if (ingredient) {
-            acc[item] = {
-              ...ingredient,
-              count: 1
-            };
+        const ingredient = ingredients.find((ing) => ing._id === item);
+        if (ingredient) {
+          if (!acc[item]) {
+            acc[item] = { ...ingredient, count: 1 };
+          } else {
+            acc[item].count++;
           }
-        } else {
-          acc[item].count++;
         }
-
         return acc;
       },
       {}
@@ -59,8 +59,12 @@ export const OrderInfo: FC = () => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  if (isOrderLoading || isIngredientsLoading) {
     return <Preloader />;
+  }
+
+  if (!orderInfo) {
+    return <div>Заказ не найден</div>;
   }
 
   return <OrderInfoUI orderInfo={orderInfo} />;

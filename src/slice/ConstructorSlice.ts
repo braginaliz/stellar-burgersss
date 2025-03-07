@@ -1,8 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TConstructorIngredient, TIngredient, TOrder } from '../utils/types'; 
-import { v4 as uuidv4 } from 'uuid'; 
+import { TConstructorIngredient, TIngredient, TOrder } from '../utils/types';
+import { v4 as uuidv4 } from 'uuid';
 
-// Интерфейс состояния конструктора бургера
 export interface IBurgerConstructorState {
   bun: TIngredient | null;
   ingredients: TConstructorIngredient[];
@@ -14,7 +13,7 @@ const initialState: IBurgerConstructorState = {
   bun: null,
   ingredients: [],
   orderRequest: false,
-  orderModalData: null,
+  orderModalData: null
 };
 
 const burgerConstructorSlice = createSlice({
@@ -26,7 +25,7 @@ const burgerConstructorSlice = createSlice({
     },
     addIngredient: {
       prepare: (payload: TIngredient) => ({
-        payload: { ...payload, id: uuidv4() } 
+        payload: { ...payload, id: uuidv4() }
       }),
       reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
         if (action.payload.type === 'bun') {
@@ -38,19 +37,25 @@ const burgerConstructorSlice = createSlice({
     },
     removeIngredient: (state, action: PayloadAction<string>) => {
       state.ingredients = state.ingredients.filter(
-        (ingredient) => ingredient.id !== action.payload 
+        (ingredient) => ingredient.id !== action.payload
       );
     },
-    moveIngredient: (state, action: PayloadAction<{ index: number; upwards: boolean }>) => {
+    moveIngredient: (
+      state,
+      action: PayloadAction<{ index: number; upwards: boolean }>
+    ) => {
       const ingredientLink = state.ingredients[action.payload.index];
 
       if (action.payload.upwards && action.payload.index > 0) {
-        // Перемещение вверх
-        state.ingredients[action.payload.index] = state.ingredients[action.payload.index - 1];
+        state.ingredients[action.payload.index] =
+          state.ingredients[action.payload.index - 1];
         state.ingredients[action.payload.index - 1] = ingredientLink;
-      } else if (!action.payload.upwards && action.payload.index < state.ingredients.length - 1) {
-        // Перемещение вниз
-        state.ingredients[action.payload.index] = state.ingredients[action.payload.index + 1];
+      } else if (
+        !action.payload.upwards &&
+        action.payload.index < state.ingredients.length - 1
+      ) {
+        state.ingredients[action.payload.index] =
+          state.ingredients[action.payload.index + 1];
         state.ingredients[action.payload.index + 1] = ingredientLink;
       }
     },
@@ -68,7 +73,7 @@ const burgerConstructorSlice = createSlice({
       state.bun = null;
       state.ingredients = [];
     }
-  },
+  }
 });
 
 export const {
@@ -79,7 +84,7 @@ export const {
   setOrderModalData,
   clearConstructor,
   moveIngredient,
-  resetConstructor,
+  resetConstructor
 } = burgerConstructorSlice.actions;
 
 export const burgerConstructorReducer = burgerConstructorSlice.reducer;
