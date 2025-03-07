@@ -4,10 +4,10 @@ import { TOrder } from '@utils-types';
 
 interface OrderState {
   orderRequest: boolean;
-  orders: TOrder[];
+  orders: [];
   loading: boolean;
   error: string | null;
-  orderModalData: TOrder| null;
+  orderModalData: TOrder | null;
 }
 
 const initialState: OrderState = {
@@ -60,8 +60,10 @@ const orderSlice = createSlice({
         state.error = action.error.message || 'Failed to fetch orders';
       })
       .addCase(createOrder.fulfilled, (state, action) => {
-        state.orders.push(action.payload.order);
-      });
+        state.orderRequest = false;
+        state.orderModalData = action.payload.order;
+      })
+
   }
 });
 
