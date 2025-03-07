@@ -1,4 +1,3 @@
-
 import React, { FC, useMemo } from 'react';
 import { TConstructorIngredient, TIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
@@ -10,31 +9,26 @@ import {
   setOrderRequest,
   setOrderModalData
 } from '../../slice/ConstructorSlice';
-import { createOrder } from '../../slice/OrdersSlice'; 
-import {isAuthorizedSelector } from '../../slice/AuthSlice';
+import { createOrder } from '../../slice/OrdersSlice';
 import { useNavigate } from 'react-router-dom';
+import { RootState } from '../../services/store';
+import { isAuthorizedSelector } from '../../slice/AuthSlice';
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
-
-  const { bun, ingredients, orderRequest, orderModalData } = useSelector(
-    (state) => state.burgerConstructor
+  const constructorItems = useSelector(
+    (state: RootState) => state.burgerConstructor
   );
-
-  const constructorItems = {
-    bun: bun,
-    ingredients: ingredients
-  };
+  const { orderRequest, orderModalData } = useSelector(
+    (state: RootState) => state.burgerConstructor
+  );
 
   const navigate = useNavigate();
   const onOrderClick = () => {
-    if (!constructorItems.bun || orderRequest) return;
-    
-    dispatch(setOrderRequest(true));
-
+    if (!constructorItems.bun) return;
 
     if (!isAuthorizedSelector) {
-      return navigate('/login'); 
+      return navigate('/login');
     }
 
     const data = [
@@ -43,22 +37,21 @@ export const BurgerConstructor: FC = () => {
       constructorItems.bun._id
     ];
 
-    dispatch(createOrder(data)); 
+    dispatch(createOrder(data));
   };
 
   const closeOrderModal = () => {
-    dispatch(setOrderRequest(false));
     dispatch(setOrderModalData(null));
   };
 
   const price = useMemo(
     () =>
-      (bun ? bun.price * 2 : 0) +
-      ingredients.reduce(
+      (constructorItems.bun ? constructorItems.bun.price * 2 : 0) +
+      constructorItems.ingredients.reduce(
         (s: number, v: TConstructorIngredient) => s + v.price,
         0
       ),
-    [bun, ingredients]
+    [constructorItems]
   );
 
   return (
