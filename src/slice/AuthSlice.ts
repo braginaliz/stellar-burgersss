@@ -10,17 +10,25 @@ import {
   updateUserApi
 } from '../utils/burger-api';
 import { deleteCookie, getCookie, setCookie } from '../utils/cookie';
+import { RootState } from 'src/services/store';
 
 interface IUState {
-  user: TUser | null;
+  isChecked:boolean;
+  userdata: TUser ;
   isAuthorized: boolean;
   error: string | undefined;
+  isLoading: boolean
 }
 
 const initialState: IUState = {
-  user: null,
+  isChecked:false,
+  userdata: {
+    name: '',
+    email: ''
+  },
   isAuthorized: false,
-  error: ''
+  error: '',
+  isLoading: false,
 };
 
 export const userLogin = createAsyncThunk(
@@ -57,18 +65,19 @@ export const userLogout = createAsyncThunk('auth/userLogout', async () => {
   deleteCookie('accessToken');
 });
 
-export const checkAuthorization = createAsyncThunk(
+export const checkAuthorization = createAsyncThunk<TUser, void>(
   'auth/checkAuthorization',
-  async (_, { dispatch }) => {
-    if (getCookie('accessToken')) {
-      const userResult = await getUserApi();
-      dispatch(setUser(userResult.user));
-      dispatch(setAuthorization(true));
-    } else {
-      dispatch(setAuthorization(false));
+  async (_, { rejectWithValue }) => {
+    try {
+      const userResult = await getUserApi(); 
+      return userResult.user; 
+    } catch (error) {
+
+      return rejectWithValue(error);
     }
   }
 );
+
 
 export const authSlice = createSlice({
   name: 'authorization',
@@ -77,14 +86,14 @@ export const authSlice = createSlice({
     setAuthorization: (state, action: PayloadAction<boolean>) => {
       state.isAuthorized = action.payload;
     },
-    setUser: (state, action: PayloadAction<TUser | null>) => {
-      state.user = action.payload;
+    setUser: (state, action: PayloadAction<TUser >) => {
+      state.userdata = action.payload;
     }
   },
   extraReducers: (builder) => {
     builder
       .addCase(userRegistrate.fulfilled, (state, action) => {
-        state.user = action.payload.user;
+        state.userdata = action.payload.user;
         state.isAuthorized = true;
         state.error = '';
       })
@@ -93,7 +102,7 @@ export const authSlice = createSlice({
         state.isAuthorized = false;
       })
       .addCase(userLogin.fulfilled, (state, action) => {
-        state.user = action.payload.user;
+        state.userdata = action.payload.user;
         state.isAuthorized = true;
         state.error = '';
       })
@@ -102,20 +111,37 @@ export const authSlice = createSlice({
         state.isAuthorized = false;
       })
       .addCase(userUpdate.fulfilled, (state, action) => {
-        state.user = action.payload.user;
+        state.userdata = action.payload.user;
       })
       .addCase(userLogout.fulfilled, (state) => {
-        state.user = null;
+        state.userdata = {
+          email: '',
+          name: ''
+        };
         state.isAuthorized = false;
+      })
+      .addCase(userRegistrate.pending, (state) => {
+        state.error = undefined;
+      })
+      .addCase(checkAuthorization.pending, (state) => {
+        state.isLoading = true; 
+        state.error = undefined; 
+      })
+      .addCase(checkAuthorization.fulfilled, (state, action: PayloadAction<TUser>) => {
+        state.isLoading = false;
+        state.userdata = action.payload; 
+      })
+      .addCase(checkAuthorization.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = undefined; 
       });
+      
   }
 });
 
-export const { setAuthorization, setUser } = authSlice.actions;
+
 export const authReducer = authSlice.reducer;
-export const UserSelector = (state: { authorization: IUState }) =>
-  state.authorization.user;
-export const isAuthorizedSelector = (state: { authorization: IUState }) =>
-  state.authorization.isAuthorized;
-export const UsernameSelector = (state: { authorization: IUState }) =>
-  state.authorization.user?.name;
+
+export const isAuthorizedSelector = (state: RootState) => state.authorization.isAuthorized;
+
+export const userSelector = (state: RootState) => state.authorization.userdata;

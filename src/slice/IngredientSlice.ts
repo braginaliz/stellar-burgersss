@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { getIngredientsApi } from '../utils/burger-api';
 import { TIngredient } from '@utils-types';
+import { RootState } from '../services/store'; // Импортируйте RootState
 
 interface IIngredientsState {
   items: TIngredient[];
@@ -42,4 +43,8 @@ const ingredientsSlice = createSlice({
   }
 });
 
+// Экспорт редьюсера
 export const ingredientsReducer = ingredientsSlice.reducer;
+
+// Селектор для получения ингредиентов
+export const selectIngredients = (state: RootState) => state.ingredients.items;

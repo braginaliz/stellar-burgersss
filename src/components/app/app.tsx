@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useDispatch } from '../../services/store';
 import { fetchIngredients } from '../../slice/IngredientSlice';
 import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
-import { IsAuthorized, NotAuthorized } from '../route/ProtectedRoute';
+import { ProtectedRoute } from '../route/ProtectedRoute';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ConstructorPage } from '@pages';
 import { Feed } from '@pages';
@@ -22,6 +22,9 @@ const App = () => {
   const bgLocation = location.state?.background;
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const handleModalClose = () => {
+    navigate(-1);
+  };
 
   useEffect(() => {
     dispatch(fetchIngredients());
@@ -29,72 +32,100 @@ const App = () => {
 
   return (
     <div className={styles.app}>
-      <AppHeader />
       <Routes location={bgLocation || location}>
+        <Route path='*' element={<NotFound404 />} />
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
-        <Route path='*' element={<NotFound404 />} />
-        <Route
-          path='/profile'
-          element={<IsAuthorized component={<Profile />} />}
-        />
         <Route
           path='/login'
-          element={<NotAuthorized component={<Login />} />}
+          element={
+            <ProtectedRoute isNotAuthorized>
+              <Login />
+            </ProtectedRoute>
+          }
         />
         <Route
           path='/register'
-          element={<NotAuthorized component={<Register />} />}
+          element={
+            <ProtectedRoute isNotAuthorized>
+              <Register />
+            </ProtectedRoute>
+          }
         />
         <Route
           path='/forgot-password'
-          element={<NotAuthorized component={<ForgotPassword />} />}
+          element={
+            <ProtectedRoute isNotAuthorized>
+              <ForgotPassword />
+            </ProtectedRoute>
+          }
         />
         <Route
           path='/reset-password'
-          element={<NotAuthorized component={<ResetPassword />} />}
+          element={
+            <ProtectedRoute isNotAuthorized>
+              <ResetPassword />
+            </ProtectedRoute>
+          }
         />
         <Route
-          path='/profile/orders'
-          element={<IsAuthorized component={<ProfileOrders />} />}
-        />
-        <Route
-          path='/profile/orders/:number'
-          element={<IsAuthorized component={<OrderInfo />} />}
+          path='/ingredients/:id'
+          element={
+            <div className={styles.detailPageWrap}>
+              <p className={`text text_type_main-large ${styles.detailHeader}`}>
+                Детали ингридиента
+              </p>
+              <IngredientDetails />
+            </div>
+          }
         />
         <Route path='/feed/:number' element={<OrderInfo />} />
-        <Route path='/ingredients/:id' element={<IngredientDetails />} />
+        <Route path='/profile'>
+          <Route
+            index
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='orders'
+            element={
+              <ProtectedRoute>
+                <ProfileOrders />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
       </Routes>
+
       {bgLocation && (
         <Routes>
           <Route
             path='/feed/:number'
             element={
-              <Modal
-                title='Заказ:'
-                children={<OrderInfo />}
-                onClose={() => navigate('/feed')}
-              />
+              <Modal title={'Детали Заказа'} onClose={handleModalClose}>
+                <OrderInfo />
+              </Modal>
             }
           />
           <Route
             path='/ingredients/:id'
             element={
-              <Modal
-                title='Детали'
-                children={<IngredientDetails />}
-                onClose={() => navigate(-1)}
-              />
+              <Modal title={'Детали ингредиента'} onClose={handleModalClose}>
+                <IngredientDetails />
+              </Modal>
             }
           />
           <Route
             path='/profile/orders/:number'
             element={
-              <Modal
-                title='Заказ'
-                children={<IsAuthorized component={<OrderInfo />} />}
-                onClose={() => navigate('/profile/orders')}
-              />
+              <ProtectedRoute>
+                <Modal title={'Детали Заказа'} onClose={handleModalClose}>
+                  <OrderInfo />
+                </Modal>
+              </ProtectedRoute>
             }
           />
         </Routes>

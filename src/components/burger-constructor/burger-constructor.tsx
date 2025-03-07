@@ -12,7 +12,7 @@ import {
 import { createOrder } from '../../slice/OrdersSlice';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../services/store';
-import { isAuthorizedSelector } from '../../slice/AuthSlice';
+
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
@@ -27,9 +27,9 @@ export const BurgerConstructor: FC = () => {
   const onOrderClick = () => {
     if (!constructorItems.bun) return;
 
-    if (!isAuthorizedSelector) {
-      return navigate('/login');
-    }
+    // if (!isAuthorizedSelector) {
+    //   return navigate('/login');
+    // }
 
     const data = [
       constructorItems.bun._id,

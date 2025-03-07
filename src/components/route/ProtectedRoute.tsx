@@ -1,19 +1,19 @@
 import { useSelector } from '../../services/store';
-import { isAuthorizedSelector, UserSelector } from '../../slice/AuthSlice';
+import { isAuthorizedSelector, userSelector } from '../../slice/AuthSlice';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Preloader } from '../ui';
 
 type ProtectedProps = {
   isNotAuthorized?: boolean;
-  component: React.JSX.Element;
+  children: React.JSX.Element;
 };
 
-const ProtectedRoute = ({
+export const ProtectedRoute = ({
   isNotAuthorized = false,
-  component
+  children
 }: ProtectedProps) => {
   const isAuthorized = useSelector(isAuthorizedSelector);
-  const user = useSelector(UserSelector);
+  const user = useSelector(userSelector); 
   const location = useLocation();
 
   if (!isAuthorized) {
@@ -29,12 +29,6 @@ const ProtectedRoute = ({
     return <Navigate to='/login' state={{ from: location }} />;
   }
 
-  return component;
+  return children;
 };
 
-export const IsAuthorized = ProtectedRoute;
-export const NotAuthorized = ({
-  component
-}: {
-  component: React.JSX.Element;
-}) => <ProtectedRoute isNotAuthorized component={component} />;
