@@ -2,7 +2,6 @@ import { getFeedsApi } from '@api';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TOrder, TOrdersData } from '@utils-types';
 
-// Определение интерфейса состояния
 export interface TFeedState {
   ordersList: TOrder[];
   totalCount: number;
@@ -10,7 +9,6 @@ export interface TFeedState {
   error: string | null;
 }
 
-// Начальное состояние
 export const initialState: TFeedState = {
   ordersList: [],
   totalCount: 0,
@@ -18,13 +16,11 @@ export const initialState: TFeedState = {
   error: null,
 };
 
-// Асинхронный thunk 
 export const fetchFeedsData = createAsyncThunk('feeds/fetchFeedsData', async () => {
   const response = await getFeedsApi();
   return response; 
 });
 
-// Создание слайса
 export const feedsSlice = createSlice({
   name: 'feeds',
   initialState,
@@ -38,26 +34,16 @@ export const feedsSlice = createSlice({
       .addCase(fetchFeedsData.pending, (state) => {
         state.error = null; 
       })
-      .addCase(
-        fetchFeedsData.fulfilled,
-        (state, action: PayloadAction<TOrdersData>) => {
-          const { orders, total, totalToday } = action.payload;
-          state.ordersList = orders;
-          state.totalCount = total;
-          state.totalTodayCount = totalToday;
-        }
-      )
+      .addCase(fetchFeedsData.fulfilled, (state, action: PayloadAction<TOrdersData>) => {
+        state.ordersList = action.payload.orders;
+        state.totalCount = action.payload.total;
+        state.totalTodayCount = action.payload.totalToday;
+      })
       .addCase(fetchFeedsData.rejected, (state, action) => {
-        state.error = action.error.message || 'Unknown error'; 
+        state.error = action.error.message || 'Ошибка загрузки';
       });
   },
 });
 
-// Селекторы
-export const selectFeedsState = (state: { feeds: TFeedState }) => state.feeds;
-export const selectFeedsOrders = (state: { feeds: TFeedState }) => state.feeds.ordersList;
-export const selectFeedsError = (state: { feeds: TFeedState }) => state.feeds.error; 
-
-export const { clearError } = feedsSlice.actions; 
-
-export default feedsSlice.reducer; 
+export const { clearError } = feedsSlice.actions;
+export default feedsSlice.reducer;

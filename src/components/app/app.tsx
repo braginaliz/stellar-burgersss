@@ -63,7 +63,7 @@ const App = () => {
               <Modal
                 title='Детали'
                 children={<IngredientDetails />}
-                onClose={() => navigate('/')}
+                onClose={() => navigate(-1)}
               />
             }
           />
