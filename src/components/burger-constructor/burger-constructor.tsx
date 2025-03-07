@@ -25,8 +25,7 @@ export const BurgerConstructor: FC = () => {
   const onOrderClick = () => {
     if (!constructorItems.bun || orderRequest) return;
     dispatch(setOrderRequest(true));
-    // Здесь должна быть логика отправки запроса на сервер для оформления заказа
-    // После получения ответа обновите orderModalData и orderRequest
+
   };
 
   const closeOrderModal = () => {
