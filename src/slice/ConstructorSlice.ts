@@ -3,15 +3,16 @@ import { TConstructorIngredient, TIngredient, TOrder } from '../utils/types';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface IBurgerConstructorState {
-  bun: TIngredient | null;
-  ingredients: TConstructorIngredient[];
+  burgerConstructor:{ bun: TIngredient | null;
+  ingredients: TConstructorIngredient[]},
   orderRequest: boolean;
   orderModalData: TOrder | null;
 }
 
 const initialState: IBurgerConstructorState = {
-  bun: null,
-  ingredients: [],
+  burgerConstructor:{  bun: null,
+    ingredients: []},
+
   orderRequest: false,
   orderModalData: null
 };
@@ -19,9 +20,12 @@ const initialState: IBurgerConstructorState = {
 const burgerConstructorSlice = createSlice({
   name: 'burgerConstructor',
   initialState,
+  selectors: {
+    burgerConstructorSelector: (state) => state.burgerConstructor
+  },
   reducers: {
     setBun: (state, action: PayloadAction<TIngredient | null>) => {
-      state.bun = action.payload;
+      state.burgerConstructor.bun = action.payload;
     },
     addIngredient: {
       prepare: (payload: TIngredient) => ({
@@ -29,14 +33,14 @@ const burgerConstructorSlice = createSlice({
       }),
       reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
         if (action.payload.type === 'bun') {
-          state.bun = action.payload;
+          state.burgerConstructor.bun = action.payload;
         } else {
-          state.ingredients.push(action.payload);
+          state.burgerConstructor.ingredients.push(action.payload);
         }
       }
     },
     removeIngredient: (state, action: PayloadAction<string>) => {
-      state.ingredients = state.ingredients.filter(
+      state.burgerConstructor.ingredients = state.burgerConstructor.ingredients.filter(
         (ingredient) => ingredient.id !== action.payload
       );
     },
@@ -44,19 +48,19 @@ const burgerConstructorSlice = createSlice({
       state,
       action: PayloadAction<{ index: number; upwards: boolean }>
     ) => {
-      const ingredientLink = state.ingredients[action.payload.index];
+      const ingredientLink = state.burgerConstructor.ingredients[action.payload.index];
 
       if (action.payload.upwards && action.payload.index > 0) {
-        state.ingredients[action.payload.index] =
-          state.ingredients[action.payload.index - 1];
-        state.ingredients[action.payload.index - 1] = ingredientLink;
+        state.burgerConstructor.ingredients[action.payload.index] =
+          state.burgerConstructor.ingredients[action.payload.index - 1];
+        state.burgerConstructor.ingredients[action.payload.index - 1] = ingredientLink;
       } else if (
         !action.payload.upwards &&
-        action.payload.index < state.ingredients.length - 1
+        action.payload.index < state.burgerConstructor.ingredients.length - 1
       ) {
-        state.ingredients[action.payload.index] =
-          state.ingredients[action.payload.index + 1];
-        state.ingredients[action.payload.index + 1] = ingredientLink;
+        state.burgerConstructor.ingredients[action.payload.index] =
+          state.burgerConstructor.ingredients[action.payload.index + 1];
+        state.burgerConstructor.ingredients[action.payload.index + 1] = ingredientLink;
       }
     },
     setOrderRequest: (state, action: PayloadAction<boolean>) => {
@@ -66,12 +70,12 @@ const burgerConstructorSlice = createSlice({
       state.orderModalData = action.payload;
     },
     clearConstructor: (state) => {
-      state.bun = null;
-      state.ingredients = [];
+      state.burgerConstructor.bun = null;
+      state.burgerConstructor.ingredients = [];
     },
     resetConstructor: (state) => {
-      state.bun = null;
-      state.ingredients = [];
+      state.burgerConstructor.bun = null;
+      state.burgerConstructor.ingredients = [];
     }
   }
 });
@@ -88,3 +92,4 @@ export const {
 } = burgerConstructorSlice.actions;
 
 export const burgerConstructorReducer = burgerConstructorSlice.reducer;
+export const { burgerConstructorSelector } = burgerConstructorSlice.selectors;

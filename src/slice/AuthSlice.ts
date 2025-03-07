@@ -13,22 +13,22 @@ import { deleteCookie, getCookie, setCookie } from '../utils/cookie';
 import { RootState } from 'src/services/store';
 
 interface IUState {
-  isChecked:boolean;
-  userdata: TUser ;
+  isChecked: boolean;
+  userdata: TUser;
   isAuthorized: boolean;
   error: string | undefined;
-  isLoading: boolean
+  isLoading: boolean;
 }
 
 const initialState: IUState = {
-  isChecked:false,
+  isChecked: false,
   userdata: {
     name: '',
     email: ''
   },
   isAuthorized: false,
   error: '',
-  isLoading: false,
+  isLoading: false
 };
 
 export const userLogin = createAsyncThunk(
@@ -69,15 +69,13 @@ export const checkAuthorization = createAsyncThunk<TUser, void>(
   'auth/checkAuthorization',
   async (_, { rejectWithValue }) => {
     try {
-      const userResult = await getUserApi(); 
-      return userResult.user; 
+      const userResult = await getUserApi();
+      return userResult.user;
     } catch (error) {
-
       return rejectWithValue(error);
     }
   }
 );
-
 
 export const authSlice = createSlice({
   name: 'authorization',
@@ -86,7 +84,7 @@ export const authSlice = createSlice({
     setAuthorization: (state, action: PayloadAction<boolean>) => {
       state.isAuthorized = action.payload;
     },
-    setUser: (state, action: PayloadAction<TUser >) => {
+    setUser: (state, action: PayloadAction<TUser>) => {
       state.userdata = action.payload;
     }
   },
@@ -124,24 +122,30 @@ export const authSlice = createSlice({
         state.error = undefined;
       })
       .addCase(checkAuthorization.pending, (state) => {
-        state.isLoading = true; 
-        state.error = undefined; 
+        state.isLoading = true;
+        state.error = undefined;
       })
-      .addCase(checkAuthorization.fulfilled, (state, action: PayloadAction<TUser>) => {
-        state.isLoading = false;
-        state.userdata = action.payload; 
-      })
+      .addCase(
+        checkAuthorization.fulfilled,
+        (state, action: PayloadAction<TUser>) => {
+          state.isLoading = false;
+          state.userdata = action.payload;
+        }
+      )
       .addCase(checkAuthorization.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = undefined; 
+        state.error = undefined;
       });
-      
+  },
+  selectors: {
+    setUser: (state) => state.userdata
   }
 });
 
-
 export const authReducer = authSlice.reducer;
 
-export const isAuthorizedSelector = (state: RootState) => state.authorization.isAuthorized;
+export const isAuthorizedSelector = (state: RootState) =>
+  state.authorization.isAuthorized;
 
 export const userSelector = (state: RootState) => state.authorization.userdata;
+export const { setUser } = authSlice.selectors;

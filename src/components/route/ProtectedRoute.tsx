@@ -13,7 +13,7 @@ export const ProtectedRoute = ({
   children
 }: ProtectedProps) => {
   const isAuthorized = useSelector(isAuthorizedSelector);
-  const user = useSelector(userSelector); 
+  const user = useSelector(userSelector);
   const location = useLocation();
 
   if (!isAuthorized) {
@@ -31,4 +31,3 @@ export const ProtectedRoute = ({
 
   return children;
 };
-

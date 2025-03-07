@@ -3,13 +3,15 @@ import { getOrdersApi, orderBurgerApi } from '../utils/burger-api';
 import { TOrder } from '@utils-types';
 
 interface OrderState {
+  orderRequest: boolean;
   orders: TOrder[];
   loading: boolean;
   error: string | null;
-  orderModalData: TOrder | null;
+  orderModalData: TOrder| null;
 }
 
 const initialState: OrderState = {
+  orderRequest: true,
   orders: [],
   loading: false,
   error: null,
@@ -25,18 +27,24 @@ export const fetchOrders = createAsyncThunk(
   }
 );
 
-export const createOrder = createAsyncThunk(
-  'orders/createOrder',
-  async (ingredients: string[]) => {
-    const order = await orderBurgerApi(ingredients);
-    return order;
-  }
+export const createOrder  = createAsyncThunk(
+  'orders/postOrderBurger',
+  async (order: string[]) => orderBurgerApi(order)
 );
 
 const orderSlice = createSlice({
   name: 'orders',
   initialState,
-  reducers: {},
+  selectors: {
+    isLoadingSelector: (state) => state.loading,
+    ordersSelector: (state) => state.orders
+  },
+  reducers: {
+    resetOrderModalData(state) {
+      state.orderModalData = null;
+      state.loading = false;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchOrders.pending, (state) => {
@@ -45,7 +53,7 @@ const orderSlice = createSlice({
       })
       .addCase(fetchOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.orderModalData = action.payload;
+   
       })
       .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false;
@@ -58,3 +66,5 @@ const orderSlice = createSlice({
 });
 
 export default orderSlice.reducer;
+export const { resetOrderModalData } = orderSlice.actions;
+export const {isLoadingSelector, ordersSelector} = orderSlice.selectors;

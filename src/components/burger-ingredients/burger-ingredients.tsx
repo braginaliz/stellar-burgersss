@@ -11,7 +11,6 @@ import {
 } from '../../slice/IngredientSlice';
 
 export const BurgerIngredients: FC = () => {
-
   const ingredients = useSelector(selectIngredients);
 
   const buns = ingredients.filter((ingredient) => ingredient.type === 'bun');
@@ -28,8 +27,6 @@ export const BurgerIngredients: FC = () => {
   const [bunsRef, inViewBuns] = useInView({ threshold: 0 });
   const [mainsRef, inViewMains] = useInView({ threshold: 0 });
   const [saucesRef, inViewSauces] = useInView({ threshold: 0 });
-
-
 
   useEffect(() => {
     if (inViewBuns) {
@@ -50,7 +47,6 @@ export const BurgerIngredients: FC = () => {
     if (tab === 'sauce')
       titleSaucesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
 
   return (
     <BurgerIngredientsUI

@@ -32,6 +32,7 @@ const App = () => {
 
   return (
     <div className={styles.app}>
+      <AppHeader />
       <Routes location={bgLocation || location}>
         <Route path='*' element={<NotFound404 />} />
         <Route path='/' element={<ConstructorPage />} />
