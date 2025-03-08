@@ -3,34 +3,35 @@ import { TConstructorIngredient, TIngredient, TOrder } from '../utils/types';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface IBurgerConstructorState {
-  constructorItems: {bun: TIngredient | null;
-  ingredients: TConstructorIngredient[]},
+  constructorItems: {
+    bun: TIngredient | null;
+    ingredients: TConstructorIngredient[];
+  };
   orderRequest: boolean;
   orderModalData: TOrder | null;
-  loading:boolean;
+  loading: boolean;
 }
 
 const initialState: IBurgerConstructorState = {
   constructorItems: {
     bun: null,
-    ingredients: []},
-
+    ingredients: [],
+  },
   orderRequest: false,
   orderModalData: null,
-  loading: true
+  loading: true,
 };
 
 const burgerConstructorSlice = createSlice({
   name: 'burgerConstructor',
   initialState,
-
   reducers: {
     setBun: (state, action: PayloadAction<TIngredient | null>) => {
       state.constructorItems.bun = action.payload;
     },
     addIngredient: {
       prepare: (payload: TIngredient) => ({
-        payload: { ...payload, id: uuidv4() }
+        payload: { ...payload, id: uuidv4() },
       }),
       reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
         if (action.payload.type === 'bun') {
@@ -38,7 +39,7 @@ const burgerConstructorSlice = createSlice({
         } else {
           state.constructorItems.ingredients.push(action.payload);
         }
-      }
+      },
     },
     removeIngredient: (state, action: PayloadAction<string>) => {
       state.constructorItems.ingredients = state.constructorItems.ingredients.filter(
@@ -77,14 +78,13 @@ const burgerConstructorSlice = createSlice({
     resetConstructor: (state) => {
       state.constructorItems.bun = null;
       state.constructorItems.ingredients = [];
-    }
+    },
   },
   selectors: {
     getLoadingSelector: (state) => state.loading,
-    getConstructorSelector: (state) => state.constructorItems
-  }
+    getConstructorSelector: (state) => state.constructorItems,
+  },
 });
-
 
 export const {
   addIngredient,
@@ -94,9 +94,10 @@ export const {
   setOrderModalData,
   clearConstructor,
   moveIngredient,
-  resetConstructor
+  resetConstructor,
 } = burgerConstructorSlice.actions;
-export const { getLoadingSelector, getConstructorSelector } =
-burgerConstructorSlice.selectors;
+
+export const { getLoadingSelector, getConstructorSelector } = burgerConstructorSlice.selectors;
 
 export const burgerConstructorReducer = burgerConstructorSlice.reducer;
+

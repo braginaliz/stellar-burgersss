@@ -26,7 +26,7 @@ export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
 
-  const user = useSelector(setUser);
+  const user = useSelector((state: RootState) => state.authorization.userdata); 
   const constructorItems = useSelector(getConstructorSelector);
   const orderRequest = useSelector(selectOrderRequest);
   const orderModalData = useSelector(selectOrderResponse);
@@ -39,7 +39,12 @@ export const BurgerConstructor: FC = () => {
         return;
       }
 
-      dispatch(createOrder(constructorItems));
+      dispatch(createOrder({ 
+        constructorItems,
+        orderRequest: false,
+        orderModalData: null,
+        loading: false
+      }));
       dispatch(resetConstructor());
       setIsOpen(false);
     } else {

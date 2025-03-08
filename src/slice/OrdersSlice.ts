@@ -1,7 +1,7 @@
 import { orderBurgerApi } from '@api';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { TOrder } from '@utils-types';
-import { IBurgerConstructorState}  from './ConstructorSlice';
+import { IBurgerConstructorState } from './ConstructorSlice';
 
 type TOrdersState = {
   error: string | null | undefined;
@@ -14,9 +14,9 @@ type TOrdersState = {
 const initialState: TOrdersState = {
   error: null,
   orderResponse: {
-    order: null
+    order: null,
   },
-  orderRequest: false
+  orderRequest: false,
 };
 
 export const createOrder = createAsyncThunk(
@@ -38,11 +38,11 @@ const ordersSlice = createSlice({
   reducers: {
     resetOrderResponse: (state) => {
       state.orderResponse.order = null;
-    }
+    },
   },
   selectors: {
     selectOrderResponse: (state) => state.orderResponse.order,
-    selectOrderRequest: (state) => state.orderRequest
+    selectOrderRequest: (state) => state.orderRequest,
   },
   extraReducers: (builder) => {
     builder
@@ -58,12 +58,11 @@ const ordersSlice = createSlice({
         state.orderRequest = false;
         state.orderResponse.order = action.payload.order;
       });
-  }
+  },
 });
 
 export const ordersReducer = ordersSlice.reducer;
 
-export const { selectOrderRequest, selectOrderResponse } =
-  ordersSlice.selectors;
+export const { selectOrderRequest, selectOrderResponse } = ordersSlice.selectors;
 
 export const { resetOrderResponse } = ordersSlice.actions;
