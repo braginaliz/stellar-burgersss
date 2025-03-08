@@ -20,13 +20,13 @@ import {
 } from '../../slice/OrdersSlice';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../services/store';
-import { setUser } from '../../slice/AuthSlice';
+import { isAuthorizedSelector } from '../../slice/AuthSlice';
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
 
-  const user = useSelector((state: RootState) => state.authorization.userdata); 
+  const user = useSelector(isAuthorizedSelector);
   const constructorItems = useSelector(getConstructorSelector);
   const orderRequest = useSelector(selectOrderRequest);
   const orderModalData = useSelector(selectOrderResponse);
@@ -39,12 +39,14 @@ export const BurgerConstructor: FC = () => {
         return;
       }
 
-      dispatch(createOrder({ 
-        constructorItems,
-        orderRequest: false,
-        orderModalData: null,
-        loading: false
-      }));
+      dispatch(
+        createOrder({
+          constructorItems,
+          orderRequest: false,
+          orderModalData: null,
+          loading: false
+        })
+      );
       dispatch(resetConstructor());
       setIsOpen(false);
     } else {

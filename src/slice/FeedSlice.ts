@@ -10,7 +10,6 @@ type TFeedsState = {
     total: number;
     totalToday: number;
   };
-
 };
 
 const initialState: TFeedsState = {
@@ -20,7 +19,7 @@ const initialState: TFeedsState = {
     orders: [],
     total: 0,
     totalToday: 0
-  },
+  }
 };
 
 export const getAllFeeds = createAsyncThunk('feeds/getAllFeeds', async () =>

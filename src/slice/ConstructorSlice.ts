@@ -15,11 +15,11 @@ export interface IBurgerConstructorState {
 const initialState: IBurgerConstructorState = {
   constructorItems: {
     bun: null,
-    ingredients: [],
+    ingredients: []
   },
   orderRequest: false,
   orderModalData: null,
-  loading: true,
+  loading: true
 };
 
 const burgerConstructorSlice = createSlice({
@@ -31,7 +31,7 @@ const burgerConstructorSlice = createSlice({
     },
     addIngredient: {
       prepare: (payload: TIngredient) => ({
-        payload: { ...payload, id: uuidv4() },
+        payload: { ...payload, id: uuidv4() }
       }),
       reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
         if (action.payload.type === 'bun') {
@@ -39,30 +39,34 @@ const burgerConstructorSlice = createSlice({
         } else {
           state.constructorItems.ingredients.push(action.payload);
         }
-      },
+      }
     },
     removeIngredient: (state, action: PayloadAction<string>) => {
-      state.constructorItems.ingredients = state.constructorItems.ingredients.filter(
-        (ingredient) => ingredient.id !== action.payload
-      );
+      state.constructorItems.ingredients =
+        state.constructorItems.ingredients.filter(
+          (ingredient) => ingredient.id !== action.payload
+        );
     },
     moveIngredient: (
       state,
       action: PayloadAction<{ index: number; upwards: boolean }>
     ) => {
-      const ingredientLink = state.constructorItems.ingredients[action.payload.index];
+      const ingredientLink =
+        state.constructorItems.ingredients[action.payload.index];
 
       if (action.payload.upwards && action.payload.index > 0) {
         state.constructorItems.ingredients[action.payload.index] =
           state.constructorItems.ingredients[action.payload.index - 1];
-        state.constructorItems.ingredients[action.payload.index - 1] = ingredientLink;
+        state.constructorItems.ingredients[action.payload.index - 1] =
+          ingredientLink;
       } else if (
         !action.payload.upwards &&
         action.payload.index < state.constructorItems.ingredients.length - 1
       ) {
         state.constructorItems.ingredients[action.payload.index] =
           state.constructorItems.ingredients[action.payload.index + 1];
-        state.constructorItems.ingredients[action.payload.index + 1] = ingredientLink;
+        state.constructorItems.ingredients[action.payload.index + 1] =
+          ingredientLink;
       }
     },
     setOrderRequest: (state, action: PayloadAction<boolean>) => {
@@ -78,12 +82,12 @@ const burgerConstructorSlice = createSlice({
     resetConstructor: (state) => {
       state.constructorItems.bun = null;
       state.constructorItems.ingredients = [];
-    },
+    }
   },
   selectors: {
     getLoadingSelector: (state) => state.loading,
-    getConstructorSelector: (state) => state.constructorItems,
-  },
+    getConstructorSelector: (state) => state.constructorItems
+  }
 });
 
 export const {
@@ -94,10 +98,10 @@ export const {
   setOrderModalData,
   clearConstructor,
   moveIngredient,
-  resetConstructor,
+  resetConstructor
 } = burgerConstructorSlice.actions;
 
-export const { getLoadingSelector, getConstructorSelector } = burgerConstructorSlice.selectors;
+export const { getLoadingSelector, getConstructorSelector } =
+  burgerConstructorSlice.selectors;
 
 export const burgerConstructorReducer = burgerConstructorSlice.reducer;
-

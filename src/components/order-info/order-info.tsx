@@ -4,17 +4,15 @@ import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
 import { useParams } from 'react-router-dom';
-import {getOrderNumber} from '../../slice/FeedSlice'
-import {
-  selectIngredients
-} from '../../slice/IngredientSlice';
+import { getOrderNumber } from '../../slice/FeedSlice';
+import { selectIngredients } from '../../slice/IngredientSlice';
 import { selectOrderResponse } from '../../slice/OrdersSlice';
 
 export const OrderInfo: FC = () => {
   const dispatch = useDispatch();
   const { number } = useParams();
 
-  const orderData = useSelector(selectOrderResponse );
+  const orderData = useSelector(selectOrderResponse);
   const ingredients: TIngredient[] = useSelector(selectIngredients);
 
   useEffect(() => {

@@ -14,19 +14,24 @@ type TOrdersState = {
 const initialState: TOrdersState = {
   error: null,
   orderResponse: {
-    order: null,
+    order: null
   },
-  orderRequest: false,
+  orderRequest: false
 };
 
 export const createOrder = createAsyncThunk(
   'orders/orderBurger',
   async (items: IBurgerConstructorState) => {
     let orderData: string[] = [];
-    if (items.constructorItems.bun && items.constructorItems.ingredients.length > 0) {
+    if (
+      items.constructorItems.bun &&
+      items.constructorItems.ingredients.length > 0
+    ) {
       orderData.push(items.constructorItems.bun._id);
       orderData.push(items.constructorItems.bun._id);
-      items.constructorItems.ingredients.forEach((item) => orderData.push(item._id));
+      items.constructorItems.ingredients.forEach((item) =>
+        orderData.push(item._id)
+      );
     }
     return orderBurgerApi(orderData!);
   }
@@ -38,11 +43,11 @@ const ordersSlice = createSlice({
   reducers: {
     resetOrderResponse: (state) => {
       state.orderResponse.order = null;
-    },
+    }
   },
   selectors: {
     selectOrderResponse: (state) => state.orderResponse.order,
-    selectOrderRequest: (state) => state.orderRequest,
+    selectOrderRequest: (state) => state.orderRequest
   },
   extraReducers: (builder) => {
     builder
@@ -58,11 +63,12 @@ const ordersSlice = createSlice({
         state.orderRequest = false;
         state.orderResponse.order = action.payload.order;
       });
-  },
+  }
 });
 
 export const ordersReducer = ordersSlice.reducer;
 
-export const { selectOrderRequest, selectOrderResponse } = ordersSlice.selectors;
+export const { selectOrderRequest, selectOrderResponse } =
+  ordersSlice.selectors;
 
 export const { resetOrderResponse } = ordersSlice.actions;

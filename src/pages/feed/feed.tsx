@@ -3,15 +3,15 @@ import { FeedUI } from '@ui-pages';
 import { TOrder } from '@utils-types';
 import { FC, useEffect } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
-import { getAllFeeds } from '../../slice/FeedSlice'; // Исправлено на правильный экшен
+import { getAllFeeds } from '../../slice/FeedSlice';
 
 export const Feed: FC = () => {
   const dispatch = useDispatch();
   const { feeds, error } = useSelector((state) => state.feeds);
-  const { orders, total, totalToday } = feeds; // Изменено для получения данных из feeds
+  const { orders, total, totalToday } = feeds;
 
   useEffect(() => {
-    dispatch(getAllFeeds()); // Используем правильный экшен
+    dispatch(getAllFeeds());
   }, [dispatch]);
 
   if (error) {
@@ -23,9 +23,6 @@ export const Feed: FC = () => {
   }
 
   return (
-    <FeedUI
-      orders={orders}
-      handleGetFeeds={() => dispatch(getAllFeeds())} // Используем правильный экшен
-    />
+    <FeedUI orders={orders} handleGetFeeds={() => dispatch(getAllFeeds())} />
   );
 };

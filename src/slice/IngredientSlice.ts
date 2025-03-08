@@ -46,5 +46,4 @@ const ingredientsSlice = createSlice({
 // Экспорт редьюсера
 export const ingredientsReducer = ingredientsSlice.reducer;
 
-
 export const selectIngredients = (state: RootState) => state.ingredients.items;
