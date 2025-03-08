@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TUser } from '../utils/types';
+import { TUser, TOrder } from '../utils/types';
 import {
   getUserApi,
   loginUserApi,
@@ -7,7 +7,8 @@ import {
   registerUserApi,
   TLoginData,
   TRegisterData,
-  updateUserApi
+  updateUserApi,
+  getOrdersApi
 } from '../utils/burger-api';
 import { deleteCookie, getCookie, setCookie } from '../utils/cookie';
 import { RootState } from 'src/services/store';
@@ -16,6 +17,7 @@ interface IUState {
   isChecked: boolean;
   userdata: TUser;
   isAuthorized: boolean;
+  userorders: TOrder[] | [];
   error: string | undefined;
   isLoading: boolean;
 }
@@ -26,6 +28,7 @@ const initialState: IUState = {
     name: '',
     email: ''
   },
+  userorders:[],
   isAuthorized: false,
   error: '',
   isLoading: false
@@ -76,6 +79,10 @@ export const checkAuthorization = createAsyncThunk<TUser, void>(
     }
   }
 );
+export const userOrders = createAsyncThunk('user/getUserOrders', async () =>
+  getOrdersApi()
+);
+
 
 export const authSlice = createSlice({
   name: 'authorization',
@@ -139,8 +146,10 @@ export const authSlice = createSlice({
   },
   selectors: {
     setUser: (state) => state.userdata,
+    
     errorSelector: (state) => state.error,
-    loadingSelector: (state) => state.isLoading
+    loadingSelector: (state) => state.isLoading,
+    userordersSelector: (state) => state.userorders,
   }
 });
 
@@ -150,4 +159,4 @@ export const isAuthorizedSelector = (state: RootState) =>
   state.authorization.isAuthorized;
 
 export const userSelector = (state: RootState) => state.authorization.userdata;
-export const { loadingSelector, setUser, errorSelector } = authSlice.selectors;
+export const { loadingSelector, setUser, errorSelector,  userordersSelector } = authSlice.selectors;
