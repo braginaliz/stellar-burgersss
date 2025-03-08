@@ -138,7 +138,9 @@ export const authSlice = createSlice({
       });
   },
   selectors: {
-    setUser: (state) => state.userdata
+    setUser: (state) => state.userdata,
+    errorSelector: (state) => state.error,
+    loadingSelector: (state) => state.isLoading
   }
 });
 
@@ -148,4 +150,4 @@ export const isAuthorizedSelector = (state: RootState) =>
   state.authorization.isAuthorized;
 
 export const userSelector = (state: RootState) => state.authorization.userdata;
-export const { setUser } = authSlice.selectors;
+export const { loadingSelector, setUser, errorSelector } = authSlice.selectors;

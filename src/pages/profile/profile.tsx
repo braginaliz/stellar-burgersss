@@ -2,10 +2,10 @@ import { useDispatch, useSelector } from '../../services/store';
 import { ProfileUI } from '@ui-pages';
 import { FC, SyntheticEvent, useEffect, useState } from 'react';
 import { userUpdate } from '../../slice/AuthSlice';
-import { userSelector } from '../../slice/AuthSlice'; // Исправлено на userSelector
+import { userSelector } from '../../slice/AuthSlice'; 
 
 export const Profile: FC = () => {
-  const user = useSelector(userSelector) || { name: '', email: '' }; // Исправлено на userSelector
+  const user = useSelector(userSelector) || { name: '', email: '' };
   const dispatch = useDispatch();
 
   const [formValue, setFormValue] = useState({
