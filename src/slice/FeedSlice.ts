@@ -1,55 +1,72 @@
-import { getFeedsApi } from '@api';
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TOrder, TOrdersData } from '@utils-types';
+import { getFeedsApi, getOrderByNumberApi } from '@api';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { TOrder } from '@utils-types';
 
-export interface TFeedState {
-  ordersList: TOrder[];
-  totalCount: number;
-  totalTodayCount: number;
-  error: string | null;
-}
+type TFeedsState = {
+  orderNumber: TOrder[] | [];
+  error: string | null | undefined;
+  feeds: {
+    orders: TOrder[] | [];
+    total: number;
+    totalToday: number;
+  };
 
-export const initialState: TFeedState = {
-  ordersList: [],
-  totalCount: 0,
-  totalTodayCount: 0,
-  error: null
 };
 
-export const fetchFeedsData = createAsyncThunk(
-  'feeds/fetchFeedsData',
-  async () => {
-    const response = await getFeedsApi();
-    return response;
-  }
+const initialState: TFeedsState = {
+  orderNumber: [],
+  error: '',
+  feeds: {
+    orders: [],
+    total: 0,
+    totalToday: 0
+  },
+};
+
+export const getAllFeeds = createAsyncThunk('feeds/getAllFeeds', async () =>
+  getFeedsApi()
 );
 
-export const feedsSlice = createSlice({
+export const getOrderNumber = createAsyncThunk(
+  'feeds/getOrderByNumber',
+  async (number: number) => getOrderByNumberApi(number)
+);
+
+const feedsSlice = createSlice({
   name: 'feeds',
   initialState,
-  reducers: {
-    clearError: (state) => {
-      state.error = null;
-    }
+  reducers: {},
+  selectors: {
+    getAllOrdersSelector: (state) => state.feeds.orders,
+    getFeedsSelector: (state) => state.feeds,
+    getOrderSelector: (state) => state.orderNumber[0]
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchFeedsData.pending, (state) => {
+      .addCase(getAllFeeds.pending, (state) => {
         state.error = null;
       })
-      .addCase(
-        fetchFeedsData.fulfilled,
-        (state, action: PayloadAction<TOrdersData>) => {
-          state.ordersList = action.payload.orders;
-          state.totalCount = action.payload.total;
-          state.totalTodayCount = action.payload.totalToday;
-        }
-      )
-      .addCase(fetchFeedsData.rejected, (state, action) => {
-        state.error = action.error.message || 'Ошибка загрузки';
+      .addCase(getAllFeeds.rejected, (state, action) => {
+        state.error = action.error.message;
+      })
+      .addCase(getAllFeeds.fulfilled, (state, action) => {
+        state.error = null;
+        state.feeds = { ...action.payload };
+      })
+      .addCase(getOrderNumber.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(getOrderNumber.rejected, (state, action) => {
+        state.error = action.error.message;
+      })
+      .addCase(getOrderNumber.fulfilled, (state, action) => {
+        state.error = null;
+        state.orderNumber = action.payload.orders;
       });
   }
 });
 
-export const { clearError } = feedsSlice.actions;
-export default feedsSlice.reducer;
+export const feedsReducer = feedsSlice.reducer;
+
+export const { getAllOrdersSelector, getFeedsSelector, getOrderSelector } =
+  feedsSlice.selectors;

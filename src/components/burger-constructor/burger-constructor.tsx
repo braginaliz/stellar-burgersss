@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 import { TConstructorIngredient, TIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
 import { useSelector, useDispatch } from '../../services/store';
@@ -7,51 +7,63 @@ import {
   removeIngredient,
   setBun,
   setOrderRequest,
+  resetConstructor,
+  getConstructorSelector,
   setOrderModalData
 } from '../../slice/ConstructorSlice';
-import { createOrder } from '../../slice/OrdersSlice';
+
+import {
+  createOrder,
+  selectOrderRequest,
+  selectOrderResponse,
+  resetOrderResponse
+} from '../../slice/OrdersSlice';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../services/store';
-import {isAuthorizedSelector} from '../../slice/AuthSlice'
-
+import { setUser } from '../../slice/AuthSlice';
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
-  const constructorItems = useSelector(
-    (state: RootState) => state.burgerConstructor
-  );
-  const { orderRequest, orderModalData } = useSelector(
-    (state: RootState) => state.burgerConstructor
-  );
+  const [isOpen, setIsOpen] = useState(false);
 
+  const user = useSelector(setUser);
+  const constructorItems = useSelector(getConstructorSelector);
+  const orderRequest = useSelector(selectOrderRequest);
+  const orderModalData = useSelector(selectOrderResponse);
   const navigate = useNavigate();
+
   const onOrderClick = () => {
-    if (!constructorItems.bun) return;
+    if (isOpen) {
+      if (!user) {
+        navigate('/login');
+        return;
+      }
 
-    if (!isAuthorizedSelector) {
-      return navigate('/login');
+      dispatch(createOrder(constructorItems));
+      dispatch(resetConstructor());
+      setIsOpen(false);
+    } else {
+      setIsOpen(true);
     }
+  };
 
-    const data = [
-      constructorItems.bun._id,
-      ...constructorItems.ingredients.map((ingredient) => ingredient._id),
-      constructorItems.bun._id
-    ];
-
-    dispatch(createOrder(data));
+  const onCloseClick = () => {
+    setIsOpen(false);
   };
 
   const closeOrderModal = () => {
-    dispatch(setOrderModalData(null));
+    dispatch(resetOrderResponse());
   };
 
   const price = useMemo(
     () =>
       (constructorItems.bun ? constructorItems.bun.price * 2 : 0) +
-      constructorItems.ingredients.reduce(
-        (s: number, v: TConstructorIngredient) => s + v.price,
-        0
-      ),
+      (constructorItems.ingredients.length > 0
+        ? constructorItems.ingredients.reduce(
+            (accum, currentValue) => accum + currentValue.price,
+            0
+          )
+        : 0),
     [constructorItems]
   );
 

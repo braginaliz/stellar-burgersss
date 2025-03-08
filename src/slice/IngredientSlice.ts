@@ -46,5 +46,5 @@ const ingredientsSlice = createSlice({
 // Экспорт редьюсера
 export const ingredientsReducer = ingredientsSlice.reducer;
 
-// Селектор для получения ингредиентов
+
 export const selectIngredients = (state: RootState) => state.ingredients.items;

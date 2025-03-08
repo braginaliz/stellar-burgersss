@@ -1,72 +1,69 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getOrdersApi, orderBurgerApi } from '../utils/burger-api';
+import { orderBurgerApi } from '@api';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { TOrder } from '@utils-types';
+import { IBurgerConstructorState}  from './ConstructorSlice';
 
-interface OrderState {
+type TOrdersState = {
+  error: string | null | undefined;
+  orderResponse: {
+    order: TOrder | null;
+  };
   orderRequest: boolean;
-  orders: [];
-  loading: boolean;
-  error: string | null;
-  orderModalData: TOrder | null;
-}
-
-const initialState: OrderState = {
-  orderRequest: true,
-  orders: [],
-  loading: false,
-  error: null,
-  orderModalData: null
 };
 
-export const fetchOrders = createAsyncThunk(
-  'orders/fetchOrders',
-  async (orderId: number) => {
-    const orders = await getOrdersApi();
-    const order = orders.find((o: TOrder) => o.number === orderId);
-    return order || null;
+const initialState: TOrdersState = {
+  error: null,
+  orderResponse: {
+    order: null
+  },
+  orderRequest: false
+};
+
+export const createOrder = createAsyncThunk(
+  'orders/orderBurger',
+  async (items: IBurgerConstructorState) => {
+    let orderData: string[] = [];
+    if (items.constructorItems.bun && items.constructorItems.ingredients.length > 0) {
+      orderData.push(items.constructorItems.bun._id);
+      orderData.push(items.constructorItems.bun._id);
+      items.constructorItems.ingredients.forEach((item) => orderData.push(item._id));
+    }
+    return orderBurgerApi(orderData!);
   }
 );
 
-export const createOrder  = createAsyncThunk(
-  'orders/postOrderBurger',
-  async (order: string[]) => orderBurgerApi(order)
-);
-
-const orderSlice = createSlice({
+const ordersSlice = createSlice({
   name: 'orders',
   initialState,
-  selectors: {
-    isLoadingSelector: (state) => state.loading,
-    ordersSelector: (state) => state.orders
-  },
   reducers: {
-    resetOrderModalData(state) {
-      state.orderModalData = null;
-      state.loading = false;
+    resetOrderResponse: (state) => {
+      state.orderResponse.order = null;
     }
+  },
+  selectors: {
+    selectOrderResponse: (state) => state.orderResponse.order,
+    selectOrderRequest: (state) => state.orderRequest
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchOrders.pending, (state) => {
-        state.loading = true;
+      .addCase(createOrder.pending, (state) => {
         state.error = null;
+        state.orderRequest = true;
       })
-      .addCase(fetchOrders.fulfilled, (state, action) => {
-        state.loading = false;
-   
-      })
-      .addCase(fetchOrders.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to fetch orders';
+      .addCase(createOrder.rejected, (state, action) => {
+        state.error = action.error.message;
+        state.orderRequest = false;
       })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.orderRequest = false;
-        state.orderModalData = action.payload.order;
-      })
-
+        state.orderResponse.order = action.payload.order;
+      });
   }
 });
 
-export default orderSlice.reducer;
-export const { resetOrderModalData } = orderSlice.actions;
-export const {isLoadingSelector, ordersSelector} = orderSlice.selectors;
+export const ordersReducer = ordersSlice.reducer;
+
+export const { selectOrderRequest, selectOrderResponse } =
+  ordersSlice.selectors;
+
+export const { resetOrderResponse } = ordersSlice.actions;
