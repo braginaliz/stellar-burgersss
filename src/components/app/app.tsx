@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useDispatch } from '../../services/store';
 import { fetchIngredients } from '../../slice/IngredientSlice';
 import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
-import { ProtectedRoute } from '../route/ProtectedRoute';
+import { OnlyAuth, OnlyUnAuth } from '../route/ProtectedRoute';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ConstructorPage } from '@pages';
 import { Feed } from '@pages';
@@ -16,6 +16,7 @@ import { ResetPassword } from '@pages';
 import styles from './app.module.css';
 import { Preloader } from '../ui';
 import '../../index.css';
+import { checkUserAuth } from '../../slice/AuthSlice';
 
 const App = () => {
   const location = useLocation();
@@ -30,44 +31,29 @@ const App = () => {
     dispatch(fetchIngredients());
   }, [dispatch]);
 
+  useEffect(() => {
+    dispatch(checkUserAuth());
+  }, [checkUserAuth]);
+
   return (
     <div className={styles.app}>
-      <AppHeader />
+      <AppHeader></AppHeader>
       <Routes location={bgLocation || location}>
         <Route path='*' element={<NotFound404 />} />
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
-        <Route
-          path='/login'
-          element={
-            <ProtectedRoute isNotAuthorized>
-              <Login />
-            </ProtectedRoute>
-          }
-        />
+        <Route path='/login' element={<OnlyUnAuth component={<Login />} />} />
         <Route
           path='/register'
-          element={
-            <ProtectedRoute isNotAuthorized>
-              <Register />
-            </ProtectedRoute>
-          }
+          element={<OnlyUnAuth component={<Register />} />}
         />
         <Route
           path='/forgot-password'
-          element={
-            <ProtectedRoute isNotAuthorized>
-              <ForgotPassword />
-            </ProtectedRoute>
-          }
+          element={<OnlyUnAuth component={<ForgotPassword />} />}
         />
         <Route
           path='/reset-password'
-          element={
-            <ProtectedRoute isNotAuthorized>
-              <ResetPassword />
-            </ProtectedRoute>
-          }
+          element={<OnlyUnAuth component={<ResetPassword />} />}
         />
         <Route
           path='/ingredients/:id'
@@ -82,21 +68,10 @@ const App = () => {
         />
         <Route path='/feed/:number' element={<OrderInfo />} />
         <Route path='/profile'>
-          <Route
-            index
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
+          <Route index element={<OnlyAuth component={<Profile />} />} />
           <Route
             path='orders'
-            element={
-              <ProtectedRoute>
-                <ProfileOrders />
-              </ProtectedRoute>
-            }
+            element={<OnlyAuth component={<ProfileOrders />} />}
           />
         </Route>
       </Routes>
@@ -122,11 +97,13 @@ const App = () => {
           <Route
             path='/profile/orders/:number'
             element={
-              <ProtectedRoute>
-                <Modal title={'Детали Заказа'} onClose={handleModalClose}>
-                  <OrderInfo />
-                </Modal>
-              </ProtectedRoute>
+              <OnlyAuth
+                component={
+                  <Modal title={'Детали Заказа'} onClose={handleModalClose}>
+                    <OrderInfo />
+                  </Modal>
+                }
+              />
             }
           />
         </Routes>
