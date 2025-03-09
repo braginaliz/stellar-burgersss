@@ -26,7 +26,6 @@ const App = () => {
     navigate(-1);
   };
 
-
   useEffect(() => {
     dispatch(fetchIngredients());
   }, [dispatch]);

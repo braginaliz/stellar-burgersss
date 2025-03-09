@@ -1,27 +1,36 @@
-
 import { FC, SyntheticEvent, useState } from 'react';
 import { RegisterUI } from '@ui-pages';
-import { useDispatch, useSelector } from '../../services/store';
+import { TRegisterData } from '../../utils/burger-api';
 import { userRegistrate } from '../../slice/AuthSlice';
+import { useDispatch } from '../../services/store';
+import { useNavigate } from 'react-router-dom';
 
 export const Register: FC = () => {
-  const dispatch = useDispatch();
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const error = useSelector(state => state.authorization.error);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    const resultAction = await dispatch(userRegistrate({ email, password, name: userName }));
-    if (userRegistrate.fulfilled.match(resultAction)) {
 
+    const regData: TRegisterData = {
+      name: userName,
+      email,
+      password
+    };
+
+    const resultAction = await dispatch(userRegistrate(regData));
+    if (userRegistrate.fulfilled.match(resultAction)) {
+      navigate('/');
     }
   };
 
   return (
     <RegisterUI
-      errorText={error || ''}
+      errorText=''
       email={email}
       userName={userName}
       password={password}

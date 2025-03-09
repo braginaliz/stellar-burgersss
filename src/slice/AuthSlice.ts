@@ -1,4 +1,9 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  isAnyOf,
+  createAsyncThunk,
+  createSlice,
+  PayloadAction
+} from '@reduxjs/toolkit';
 import { TUser, TOrder } from '../utils/types';
 import {
   getUserApi,
@@ -28,29 +33,37 @@ const initialState: IUState = {
     name: '',
     email: ''
   },
-  userorders:[],
+  userorders: [],
   isAuthorized: false,
-  error: '',
+  error: undefined,
   isLoading: false
 };
 
 export const userLogin = createAsyncThunk(
   'auth/userLogin',
-  async (loginData: TLoginData) => {
-    const loginResult = await loginUserApi(loginData);
-    setCookie('accessToken', loginResult.accessToken);
-    localStorage.setItem('refreshToken', loginResult.refreshToken);
-    return loginResult;
+  async (userdata: TLoginData, { rejectWithValue }) => { 
+    const response = await loginUserApi(userdata);
+
+    if (!response?.success) {
+      return rejectWithValue(response);
+    }
+
+    const { user, refreshToken, accessToken } = response;
+
+    setCookie('accessToken', accessToken); 
+    localStorage.setItem('refreshToken', refreshToken); 
+    return user;
   }
 );
 
+
 export const userRegistrate = createAsyncThunk(
   'auth/userRegistration',
-  async (registrationData: TRegisterData) => {
-    const registrationResult = await registerUserApi(registrationData);
-    setCookie('accessToken', registrationResult.accessToken);
-    localStorage.setItem('refreshToken', registrationResult.refreshToken);
-    return registrationResult;
+  async (registerData: TRegisterData) => {
+    const data = await registerUserApi(registerData);
+    setCookie('accessToken', data.accessToken);
+    localStorage.setItem('refreshToken', data.refreshToken);
+    return data.user;
   }
 );
 
@@ -83,7 +96,6 @@ export const userOrders = createAsyncThunk('user/getUserOrders', async () =>
   getOrdersApi()
 );
 
-
 export const authSlice = createSlice({
   name: 'authorization',
   initialState,
@@ -97,59 +109,62 @@ export const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(userRegistrate.fulfilled, (state, action) => {
-        state.userdata = action.payload.user;
-        state.isAuthorized = true;
-        state.error = '';
-      })
-      .addCase(userRegistrate.rejected, (state, action) => {
-        state.error = action.error.message;
-        state.isAuthorized = false;
-      })
       .addCase(userLogin.fulfilled, (state, action) => {
-        state.userdata = action.payload.user;
-        state.isAuthorized = true;
-        state.error = '';
+        state.userdata = { ...action.payload }; // Исправлено с userData на userdata
+        state.isAuthorized = true; // Исправлено с isAuthChecked на isAuthorized
+        state.error = undefined;
+        state.isLoading = false;
       })
-      .addCase(userLogin.rejected, (state, action) => {
-        state.error = action.error.message;
-        state.isAuthorized = false;
+      .addCase(userRegistrate.fulfilled, (state, action) => {
+        // Исправлено с registerUser на userRegistrate
+        state.userdata = { ...action.payload }; // Исправлено с userData на userdata
+        state.isAuthorized = true; // Исправлено с isAuthChecked на isAuthorized
+        state.error = undefined;
+        state.isLoading = false;
       })
       .addCase(userUpdate.fulfilled, (state, action) => {
-        state.userdata = action.payload.user;
-      })
-      .addCase(userLogout.fulfilled, (state) => {
-        state.userdata = {
-          email: '',
-          name: ''
-        };
-        state.isAuthorized = false;
-      })
-      .addCase(userRegistrate.pending, (state) => {
+        // Исправлено с getUser на userUpdate
         state.error = undefined;
+        state.isLoading = false;
       })
-      .addCase(checkAuthorization.pending, (state) => {
-        state.isLoading = true;
+      .addCase(userOrders.fulfilled, (state, action) => {
+        // Исправлено с getUserOrders на userOrders
+        state.userorders = action.payload; // Исправлено с userOrders на userorders
         state.error = undefined;
+        state.isLoading = false;
       })
-      .addCase(
-        checkAuthorization.fulfilled,
-        (state, action: PayloadAction<TUser>) => {
-          state.isLoading = false;
-          state.userdata = action.payload;
+      // Удалены ненужные addMatcher
+      .addMatcher(
+        isAnyOf(
+          userLogin.pending,
+          userRegistrate.pending,
+          userUpdate.pending,
+          userOrders.pending
+        ),
+        (state) => {
+          state.error = undefined;
+          state.isLoading = true;
         }
       )
-      .addCase(checkAuthorization.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = undefined;
-      });
+      .addMatcher(
+        isAnyOf(
+          userLogin.rejected,
+          userRegistrate.rejected,
+          userUpdate.rejected,
+          userOrders.rejected
+        ),
+        (state) => {
+          state.error = undefined;
+          state.isLoading = false;
+        }
+      );
   },
   selectors: {
     setUser: (state) => state.userdata,
-    
+
     errorSelector: (state) => state.error,
     loadingSelector: (state) => state.isLoading,
-    userordersSelector: (state) => state.userorders,
+    userordersSelector: (state) => state.userorders
   }
 });
 
@@ -159,4 +174,5 @@ export const isAuthorizedSelector = (state: RootState) =>
   state.authorization.isAuthorized;
 
 export const userSelector = (state: RootState) => state.authorization.userdata;
-export const { loadingSelector, setUser, errorSelector,  userordersSelector } = authSlice.selectors;
+export const { loadingSelector, setUser, errorSelector, userordersSelector } =
+  authSlice.selectors;
