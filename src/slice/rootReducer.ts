@@ -1,16 +1,13 @@
-import { combineSlices } from '@reduxjs/toolkit';
-import { authReducer } from './AuthSlice';
-import { ingredientsReducer } from './IngredientSlice';
-import { burgerConstructorReducer } from './ConstructorSlice';
-import { feedsReducer } from './FeedSlice';
-import { ordersReducer } from './OrdersSlice';
+import { combineReducers } from 'redux';
+import userReducer from './userSlice';
+import ingredientsReducer from './ingredientsSlice';
+import ordersReducer from './ordersSlice';
 
-const rootReducer = combineSlices({
-  authorization: authReducer,
+const rootReducer = combineReducers({
+  user: userReducer,
   ingredients: ingredientsReducer,
-  burgerConstructor: burgerConstructorReducer,
-  feeds: feedsReducer,
-  orders: ordersReducer
+  orders: ordersReducer,
 });
 
 export default rootReducer;
+
