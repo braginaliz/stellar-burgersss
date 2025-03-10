@@ -21,58 +21,38 @@ import {
 } from '@components';
 
 import { OnlyAuth, OnlyUnAuth } from '../route/ProtectedRoute';
-import {
-
-  selectIsModalOpened,
-  
-} from '../../slice/OrdersSlice';
-
-import {init,selectIngredients, fetchIngredients} from '../../slice/IngredientSlice';
-import { selectIsAuthenticated,getUserThunk,} from '../../slice/UserSlice';
-import {selectOrders,fetchFeed,closeModal} from '../../slice/OrdersSlice'
-
-
-
-import { deleteCookie, getCookie } from '../../utils/cookie';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
+import { getUser, getUserAuth } from '../../slices/userSlice';
+
 
 export const App = () => {
   const dispatch = useDispatch();
-  const location = useLocation();
+  const Location = useLocation();
+  const navigate = useNavigate();
   const backgroundLocation = location.state?.background;
-  const isModalOpened = useSelector(selectIsModalOpened);
-  const token = getCookie('accessToken');
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const ingredients = useSelector(selectIngredients);
-  const feed = useSelector(selectOrders);
+    const isAuthenticated = useSelector(getUserAuth);
+  const closeModal = () => {
+    navigate(-1);
+  };
+  
+  const profileMatch = useMatch('/profile/orders/:number')?.params.number;
 
-  useEffect(() => {
-    if (!isAuthenticated && token) {
-      dispatch(getUserThunk())
-        .unwrap()
-        .then(() => {
-          dispatch(init());
-        })
-        .catch((e) => {
-          deleteCookie('accessToken');
-          localStorage.removeItem('refreshToken');
-        });
-    } else {
-      dispatch(init());
-    }
-  }, []);
+    const feedMatch = useMatch('/feed/:number')?.params.number;
+  const orderNumber = profileMatch || feedMatch;
 
-  useEffect(() => {
-    if (!ingredients.length) {
-      dispatch(fetchIngredients());
+useEffect(() => {
+    if (!isAuthenticated) {
+      dispatch(getUser()).then(() => {
+        const lastPath = localStorage.getItem('lastPath');
+        if (isAuthenticated && lastPath) {
+          navigate(lastPath);
+        }
+      });
     }
-  }, []);
+    dispatch(fetchIngredients());
+  }, [dispatch, isAuthenticated, navigate]);
 
-  useEffect(() => {
-    if (!feed.length) {
-      dispatch(fetchFeed());
-    }
-  }, []);
 
   return (
     <div className={styles.app}>
@@ -94,6 +74,16 @@ export const App = () => {
           path='/reset-password'
           element={<OnlyUnAuth component={<ResetPassword />} />}
         />
+
+         <Route
+          path='/profile'
+          element={<OnlyAuth component={< <Profile />} />}
+        />
+ <Route
+          path='/profile/orders'
+          element={<OnlyAuth component={< <ProfileOrders />} />}
+        />
+            
         <Route
           path='/ingredients/:id'
           element={
