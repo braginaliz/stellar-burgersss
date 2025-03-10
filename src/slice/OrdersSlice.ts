@@ -1,74 +1,110 @@
-import { orderBurgerApi } from '@api';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { TOrder } from '@utils-types';
-import { IBurgerConstructorState } from './ConstructorSlice';
+import {
+  orderBurgerApi,
+  getFeedsApi,
+  getOrdersApi
+} from '../utils/burger-api';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  TOrder
+} from '@utils-types';
 
-type TOrdersState = {
-  error: string | null | undefined;
-  orderResponse: {
-    order: TOrder | null;
-  };
+type TInitialStateOrders = {
+  orders: TOrder[];
+  totalOrders: number;
+  ordersToday: number;
+  userOrders: TOrder[] | null;
   orderRequest: boolean;
+  orderModalData: TOrder | null;
 };
 
-const initialState: TOrdersState = {
-  error: null,
-  orderResponse: {
-    order: null
-  },
-  orderRequest: false
+const initialStateOrders: TInitialStateOrders = {
+  orders: [],
+  totalOrders: 0,
+  ordersToday: 0,
+  userOrders: null,
+  orderRequest: false,
+  orderModalData: null
 };
 
-export const createOrder = createAsyncThunk(
-  'orders/orderBurger',
-  async (items: IBurgerConstructorState) => {
-    let orderData: string[] = [];
-    if (
-      items.constructorItems.bun &&
-      items.constructorItems.ingredients.length > 0
-    ) {
-      orderData.push(items.constructorItems.bun._id);
-      orderData.push(items.constructorItems.bun._id);
-      items.constructorItems.ingredients.forEach((item) =>
-        orderData.push(item._id)
-      );
-    }
-    return orderBurgerApi(orderData!);
-  }
-);
-
-const ordersSlice = createSlice({
+export const ordersSlice = createSlice({
   name: 'orders',
-  initialState,
+  initialState: initialStateOrders,
   reducers: {
-    resetOrderResponse: (state) => {
-      state.orderResponse.order = null;
-    }
-  },
-  selectors: {
-    selectOrderResponse: (state) => state.orderResponse.order,
-    selectOrderRequest: (state) => state.orderRequest
+    closeOrderRequest(state) {
+      state.orderRequest = false;
+      state.orderModalData = null;
+    },
+    removeOrders(state) {
+      state.orders.length = 0;
+    },
+    removeUserOrders(state) {
+      state.userOrders = null;
+    },
+    openModal(state) {
+      state.orderModalData = null; // Could add any modal logic here if needed
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(createOrder.pending, (state) => {
-        state.error = null;
+      .addCase(fetchNewOrder.pending, (state) => {
         state.orderRequest = true;
       })
-      .addCase(createOrder.rejected, (state, action) => {
-        state.error = action.error.message;
+      .addCase(fetchNewOrder.rejected, (state) => {
         state.orderRequest = false;
       })
-      .addCase(createOrder.fulfilled, (state, action) => {
+      .addCase(fetchNewOrder.fulfilled, (state, action) => {
+        state.orderModalData = action.payload.order;
         state.orderRequest = false;
-        state.orderResponse.order = action.payload.order;
+      })
+      .addCase(fetchFeed.pending, (state) => {
+        state.orderRequest = true;
+      })
+      .addCase(fetchFeed.rejected, (state) => {
+        state.orderRequest = false;
+      })
+      .addCase(fetchFeed.fulfilled, (state, action) => {
+        state.orderRequest = false;
+        state.orders = action.payload.orders;
+        state.totalOrders = action.payload.total;
+        state.ordersToday = action.payload.totalToday;
+      })
+      .addCase(fetchUserOrders.pending, (state) => {
+        state.orderRequest = true;
+      })
+      .addCase(fetchUserOrders.rejected, (state) => {
+        state.orderRequest = false;
+      })
+      .addCase(fetchUserOrders.fulfilled, (state, action) => {
+        state.orderRequest = false;
+        state.userOrders = action.payload;
       });
   }
 });
 
-export const ordersReducer = ordersSlice.reducer;
+export const fetchNewOrder = createAsyncThunk(
+  'orders/newOrder',
+  async (data: string[]) => orderBurgerApi(data)
+);
 
-export const { selectOrderRequest, selectOrderResponse } =
-  ordersSlice.selectors;
+export const fetchFeed = createAsyncThunk('user/feed', async () =>
+  getFeedsApi()
+);
 
-export const { resetOrderResponse } = ordersSlice.actions;
+export const fetchUserOrders = createAsyncThunk('user/orders', async () =>
+  getOrdersApi()
+);
+
+export const { 
+  closeOrderRequest, 
+  removeOrders, 
+  removeUserOrders, 
+  openModal 
+} = ordersSlice.actions;
+
+export const selectOrders = (state) => state.orders.orders;
+export const selectTotalOrders = (state) => state.orders.totalOrders;
+export const selectTodayOrders = (state) => state.orders.ordersToday;
+export const selectUserOrders = (state) => state.orders.userOrders;
+export const selectOrderRequest = (state) => state.orders.orderRequest;
+export const selectOrderModalData = (state) => state.orders.orderModalData;
+export default ordersSlice.reducer;
