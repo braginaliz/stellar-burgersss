@@ -27,6 +27,29 @@ const initialStateUser: TInitialStateUser = {
   errorText: ''
 };
 
+export const fetchLoginUser = createAsyncThunk(
+  'user/login',
+  async (data: TLoginData) => loginUserApi(data)
+);
+
+export const fetchRegisterUser = createAsyncThunk(
+  'user/register',
+  async (data: TRegisterData) => registerUserApi(data)
+);
+
+export const getUserThunk = createAsyncThunk('user/get', async () =>
+  getUserApi()
+);
+
+export const fetchLogout = createAsyncThunk('user/logout', async () =>
+  logoutApi()
+);
+
+export const fetchUpdateUser = createAsyncThunk(
+  'user/update',
+  async (user: Partial<TRegisterData>) => updateUserApi(user)
+);
+
 export const userSlice = createSlice({
   name: 'user',
   initialState: initialStateUser,
@@ -37,6 +60,11 @@ export const userSlice = createSlice({
     removeErrorText(state) {
       state.errorText = '';
     }
+  }, selectors: {
+    selectLoading: (state) => state.loading,
+    selectUser: (state) => state.user,
+    selectIsAuthenticated: (state) => state.isAuthenticated,
+    selectErrorText: (state) => state.errorText
   },
   extraReducers: (builder) => {
     builder
@@ -102,35 +130,11 @@ export const userSlice = createSlice({
   }
 });
 
-export const fetchLoginUser = createAsyncThunk(
-  'user/login',
-  async (data: TLoginData) => loginUserApi(data)
-);
 
-export const fetchRegisterUser = createAsyncThunk(
-  'user/register',
-  async (data: TRegisterData) => registerUserApi(data)
-);
-
-export const getUserThunk = createAsyncThunk('user/get', async () =>
-  getUserApi()
-);
-
-export const fetchLogout = createAsyncThunk('user/logout', async () =>
-  logoutApi()
-);
-
-export const fetchUpdateUser = createAsyncThunk(
-  'user/update',
-  async (user: Partial<TRegisterData>) => updateUserApi(user)
-);
 
 export const {
   setErrorText,
   removeErrorText
 } = userSlice.actions;
-export const selectUser = (state) => state.user.user;
-export const selectIsAuthenticated = (state) => state.user.isAuthenticated;
-export const selectUserLoading = (state) => state.user.loading;
-export const selectUserErrorText = (state) => state.user.errorText;
+export const {selectUser, selectIsAuthenticated, selectLoading, selectErrorText} = userSlice.selectors;
 export default userSlice.reducer;

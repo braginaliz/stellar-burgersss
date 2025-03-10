@@ -13,6 +13,7 @@ type TInitialStateIngredients = {
   ingredients: TIngredient[];
   loading: boolean;
   constructorItems: TConstructorItems;
+  isInit: boolean;
 };
 
 const initialStateIngredients: TInitialStateIngredients = {
@@ -23,8 +24,15 @@ const initialStateIngredients: TInitialStateIngredients = {
       price: 0
     },
     ingredients: []
-  }
+  },
+  isInit: false
 };
+
+export const fetchIngredients = createAsyncThunk(
+  'ingredients/getAll',
+  async () => getIngredientsApi()
+);
+
 
 export const ingredientsSlice = createSlice({
   name: 'ingredients',
@@ -80,7 +88,14 @@ export const ingredientsSlice = createSlice({
     init(state) {
       state.constructorItems = initialStateIngredients.constructorItems;
     }
+  },selectors: {
+    selectIngredients: (state) => state.ingredients,
+    selectLoading: (state) => state.loading,
+    selectConstructorItems: (state) => state.constructorItems,
+    selectIsInit: (state) => state.isInit,
+   
   },
+
   extraReducers: (builder) => {
     builder
       .addCase(fetchIngredients.pending, (state) => {
@@ -96,10 +111,6 @@ export const ingredientsSlice = createSlice({
   }
 });
 
-export const fetchIngredients = createAsyncThunk(
-  'ingredients/getAll',
-  async () => getIngredientsApi()
-);
 
 export const {
   addIngredient,
@@ -108,7 +119,5 @@ export const {
   moveIngredientDown,
   init
 } = ingredientsSlice.actions;
-export const selectIngredients = (state) => state.ingredients.ingredients;
-export const selectIngredientsLoading = (state) => state.ingredients.loading;
-export const selectConstructorItems = (state) => state.ingredients.constructorItems;
+export const {selectIngredients, selectConstructorItems, selectLoading, selectIsInit} = ingredientsSlice.selectors;
 export default ingredientsSlice.reducer;

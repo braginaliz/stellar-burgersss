@@ -8,6 +8,8 @@ import {
   TOrder
 } from '@utils-types';
 
+
+
 type TInitialStateOrders = {
   orders: TOrder[];
   totalOrders: number;
@@ -15,6 +17,7 @@ type TInitialStateOrders = {
   userOrders: TOrder[] | null;
   orderRequest: boolean;
   orderModalData: TOrder | null;
+  isModalOpened: boolean;
 };
 
 const initialStateOrders: TInitialStateOrders = {
@@ -23,8 +26,23 @@ const initialStateOrders: TInitialStateOrders = {
   ordersToday: 0,
   userOrders: null,
   orderRequest: false,
-  orderModalData: null
+  orderModalData: null,
+  isModalOpened: false,
 };
+
+
+export const fetchNewOrder = createAsyncThunk(
+  'orders/newOrder',
+  async (data: string[]) => orderBurgerApi(data)
+);
+
+export const fetchFeed = createAsyncThunk('user/feed', async () =>
+  getFeedsApi()
+);
+
+export const fetchUserOrders = createAsyncThunk('user/orders', async () =>
+  getOrdersApi()
+);
 
 export const ordersSlice = createSlice({
   name: 'orders',
@@ -41,9 +59,24 @@ export const ordersSlice = createSlice({
       state.userOrders = null;
     },
     openModal(state) {
-      state.orderModalData = null; // Could add any modal logic here if needed
+      state.orderModalData = null; 
+    },
+    closeModal(state) {
+      state.isModalOpened = false;
     },
   },
+  selectors: {
+   
+    selectOrderModalData: (state) => state.orderModalData,
+    selectOrderRequest: (state) => state.orderRequest,
+    selectOrders: (state) => state.orders,
+    selectTotalOrders: (state) => state.totalOrders,
+    selectTodayOrders: (state) => state.ordersToday,
+    selectUserOrders: (state) => state.userOrders,
+    selectIsModalOpened: (state) => state.isModalOpened,
+  },
+
+  
   extraReducers: (builder) => {
     builder
       .addCase(fetchNewOrder.pending, (state) => {
@@ -81,30 +114,19 @@ export const ordersSlice = createSlice({
   }
 });
 
-export const fetchNewOrder = createAsyncThunk(
-  'orders/newOrder',
-  async (data: string[]) => orderBurgerApi(data)
-);
-
-export const fetchFeed = createAsyncThunk('user/feed', async () =>
-  getFeedsApi()
-);
-
-export const fetchUserOrders = createAsyncThunk('user/orders', async () =>
-  getOrdersApi()
-);
 
 export const { 
   closeOrderRequest, 
   removeOrders, 
   removeUserOrders, 
-  openModal 
+  openModal ,
+  closeModal
 } = ordersSlice.actions;
 
-export const selectOrders = (state) => state.orders.orders;
-export const selectTotalOrders = (state) => state.orders.totalOrders;
-export const selectTodayOrders = (state) => state.orders.ordersToday;
-export const selectUserOrders = (state) => state.orders.userOrders;
-export const selectOrderRequest = (state) => state.orders.orderRequest;
-export const selectOrderModalData = (state) => state.orders.orderModalData;
+export const { selectOrderModalData,
+  selectOrderRequest,
+  selectOrders,
+  selectTotalOrders,
+  selectTodayOrders,
+  selectUserOrders,selectIsModalOpened} = ordersSlice.selectors;
 export default ordersSlice.reducer;

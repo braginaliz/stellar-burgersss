@@ -1,7 +1,7 @@
-import { combineSlices } from 'redux';
-import userReducer from './userSlice';
-import ingredientsReducer from './ingredientsSlice';
-import ordersReducer from './ordersSlice';
+import { combineSlices } from '@reduxjs/toolkit';
+import userReducer from './UserSlice';
+import ingredientsReducer from './IngredientSlice';
+import ordersReducer from './OrdersSlice';
 
 const rootReducer = combineSlices({
   user: userReducer,
