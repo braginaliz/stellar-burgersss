@@ -22,7 +22,7 @@ interface IUState {
   isAuthChecked: boolean;
   userdata: TUser | null;
   userorders: TOrder[] | [];
-  error: string | undefined;
+  error: string | undefined| null;
   isLoading: boolean;
 }
 
@@ -91,7 +91,9 @@ export const authSlice = createSlice({
   reducers: {
     setIsAuthChecked: (state, action: PayloadAction<boolean>) => {
       state.isAuthChecked = action.payload;
-    }
+    },
+    resetErrorMessage: (state) => {
+      state.error = null;}
   },
   extraReducers: (builder) => {
     builder
@@ -173,3 +175,5 @@ export const {
   errorSelector,
   userordersSelector
 } = authSlice.selectors;
+
+export const { resetErrorMessage,setIsAuthChecked} = authSlice.actions;
