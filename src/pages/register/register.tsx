@@ -1,61 +1,43 @@
-import { FC, SyntheticEvent, useEffect } from 'react';
+import { FC, SyntheticEvent, useState } from 'react';
 import { RegisterUI } from '@ui-pages';
-import {
-  fetchRegisterUser,
-  getUserThunk,
-  removeErrorText,
-  selectErrorText,
-  selectLoading
-} from '../../slices/stellarBurgerSlice';
-import { Preloader } from '@ui';
-import { useAppSelector, useAppDispatch } from '../../services/store';
-import { useForm } from '../../hooks/useForm';
-import { setCookie } from '../../utils/cookie';
+import { TRegisterData } from '../../utils/burger-api';
+import { useDispatch } from '../../services/store';
+import { useNavigate } from 'react-router-dom';
+
+import { registerUser } from '../../slice/UserSlice';
 
 export const Register: FC = () => {
-  const dispatch = useAppDispatch();
-  const { values, handleChange } = useForm({
-    userName: '',
-    email: '',
-    password: ''
-  });
-  const isLoading = useAppSelector(selectLoading);
-  const error = useAppSelector(selectErrorText);
+  const [userName, setUserName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  useEffect(() => {
-    dispatch(removeErrorText());
-  }, []);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: SyntheticEvent) => {
+  const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    dispatch(
-      fetchRegisterUser({
-        name: values.userName,
-        password: values.password,
-        email: values.email
-      })
-    )
-      .unwrap()
-      .then((payload) => {
-        localStorage.setItem('refreshToken', payload.refreshToken);
-        setCookie('accessToken', payload.accessToken);
-        dispatch(getUserThunk());
-      });
-  };
 
-  if (isLoading) {
-    return <Preloader />;
-  }
+    const regData: TRegisterData = {
+      name: userName,
+      email,
+      password
+    };
+
+    const resultAction = await dispatch(registerUser(regData));
+    if (registerUser.fulfilled.match(resultAction)) {
+      navigate('/');
+    }
+  };
 
   return (
     <RegisterUI
-      errorText={error}
-      email={values.email}
-      userName={values.userName}
-      password={values.password}
-      setEmail={handleChange}
-      setPassword={handleChange}
-      setUserName={handleChange}
+      errorText=''
+      email={email}
+      userName={userName}
+      password={password}
+      setEmail={setEmail}
+      setPassword={setPassword}
+      setUserName={setUserName}
       handleSubmit={handleSubmit}
     />
   );

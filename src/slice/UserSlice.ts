@@ -1,140 +1,150 @@
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { TUser } from '@utils-types';
 import {
-  TLoginData,
-  TRegisterData,
-  getUserApi,
+  registerUserApi,
   loginUserApi,
   logoutApi,
-  registerUserApi,
-  updateUserApi
+  getUserApi,
+  updateUserApi,
+  TLoginData,
+  TRegisterData
 } from '../utils/burger-api';
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TUser } from '@utils-types';
 
-type TInitialStateUser = {
-  user: TUser;
+export interface IUserState {
+  user: TUser | null;
   isAuthenticated: boolean;
-  loading: boolean;
-  errorText: string;
-};
+  isLoading: boolean;
+  error: string | null;
+}
 
-const initialStateUser: TInitialStateUser = {
+export const initialState: IUserState = {
   user: {
     name: '',
     email: ''
   },
-  isAuthenticated: false,
-  loading: false,
-  errorText: ''
+  error: null,
+  isLoading: false,
+  isAuthenticated: false
 };
 
-export const fetchLoginUser = createAsyncThunk(
-  'user/login',
-  async (data: TLoginData) => loginUserApi(data)
-);
-
-export const fetchRegisterUser = createAsyncThunk(
+export const registerUser = createAsyncThunk(
   'user/register',
-  async (data: TRegisterData) => registerUserApi(data)
+  async (data: TRegisterData, { rejectWithValue }) =>
+    await registerUserApi(data).catch((error) => rejectWithValue(error.message))
 );
 
-export const getUserThunk = createAsyncThunk('user/get', async () =>
-  getUserApi()
+export const loginUser = createAsyncThunk(
+  'user/login',
+  async (data: TLoginData, { rejectWithValue }) =>
+    await loginUserApi(data).catch((error) => rejectWithValue(error.message))
 );
 
-export const fetchLogout = createAsyncThunk('user/logout', async () =>
-  logoutApi()
+export const logoutUser = createAsyncThunk(
+  'user/logout',
+  async (_, { rejectWithValue }) =>
+    await logoutApi().catch((error) => rejectWithValue(error.message))
 );
 
-export const fetchUpdateUser = createAsyncThunk(
-  'user/update',
-  async (user: Partial<TRegisterData>) => updateUserApi(user)
+export const getUser = createAsyncThunk(
+  'user/getUser',
+  async (_, { rejectWithValue }) =>
+    await getUserApi().catch((error) => rejectWithValue(error.message))
+);
+
+export const updateUser = createAsyncThunk(
+  'user/updateUser',
+  async (user: Partial<TRegisterData>, { rejectWithValue }) =>
+    await updateUserApi(user).catch((error) => rejectWithValue(error.message))
 );
 
 export const userSlice = createSlice({
   name: 'user',
-  initialState: initialStateUser,
-  reducers: {
-    setErrorText(state, action: PayloadAction<string>) {
-      state.errorText = action.payload;
-    },
-    removeErrorText(state) {
-      state.errorText = '';
-    }
-  }, selectors: {
-    selectLoading: (state) => state.loading,
-    selectUser: (state) => state.user,
-    selectIsAuthenticated: (state) => state.isAuthenticated,
-    selectErrorText: (state) => state.errorText
+  initialState,
+  reducers: {},
+  selectors: {
+    getUserState: (state) => state.user,
+    getUserName: (state) => state.user?.name,
+    getUserEmail: (state) => state.user?.email,
+    getUserError: (state) => state.error,
+    getUserAuth: (state) => state.isAuthenticated
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchLoginUser.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchLoginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.errorText = action.error.message!;
-      })
-      .addCase(fetchLoginUser.fulfilled, (state, action) => {
-        state.loading = false;
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
         state.isAuthenticated = true;
+        state.error = null;
       })
-      .addCase(fetchRegisterUser.pending, (state) => {
-        state.loading = true;
+      .addCase(registerUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
       })
-      .addCase(fetchRegisterUser.rejected, (state, action) => {
-        state.loading = false;
-        state.errorText = action.error.message!;
-      })
-      .addCase(fetchRegisterUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.isAuthenticated = true;
-      })
-      .addCase(getUserThunk.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(getUserThunk.rejected, (state) => {
-        state.loading = false;
+      .addCase(registerUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Failed to register user';
+      });
+    builder
+      .addCase(loginUser.pending, (state) => {
         state.isAuthenticated = false;
-        state.user = { name: '', email: '' };
+        state.isLoading = true;
+        state.error = null;
       })
-      .addCase(getUserThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user.name = action.payload.user.name;
-        state.user.email = action.payload.user.email;
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = false;
+        state.error = action.error.message || 'Failed to login user';
+      });
+    builder.addCase(logoutUser.fulfilled, (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+    });
+    builder
+      .addCase(getUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.isAuthenticated = false;
+      })
+      .addCase(getUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
         state.isAuthenticated = true;
       })
-      .addCase(fetchLogout.pending, (state) => {
-        state.loading = true;
+      .addCase(getUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Failed to get user';
+        state.isAuthenticated = false;
+      });
+    builder
+      .addCase(updateUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
       })
-      .addCase(fetchLogout.fulfilled, (state, action) => {
-        state.loading = false;
-        if (action.payload.success) {
-          state.user = { name: '', email: '' };
-          state.isAuthenticated = false;
-        }
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+        state.error = null;
       })
-      .addCase(fetchUpdateUser.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchUpdateUser.rejected, (state) => {
-        state.loading = false;
-      })
-      .addCase(fetchUpdateUser.fulfilled, (state, action) => {
-        state.loading = false;
-        if (action.payload.success) {
-          state.user.name = action.payload.user.name;
-          state.user.email = action.payload.user.email;
-        }
+      .addCase(updateUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Failed to update user';
       });
   }
 });
 
-
-
 export const {
-  setErrorText,
-  removeErrorText
-} = userSlice.actions;
-export const {selectUser, selectIsAuthenticated, selectLoading, selectErrorText} = userSlice.selectors;
-export default userSlice.reducer;
+  getUserState,
+  getUserAuth,
+  getUserName,
+  getUserEmail,
+  getUserError
+} = userSlice.selectors;
+
+export const UserReducer = userSlice.reducer;

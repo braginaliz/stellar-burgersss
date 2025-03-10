@@ -1,25 +1,22 @@
 import { FC, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
-import { IngredientDetailsUI } from '../ui/ingredient-details';
+import { useSelector, useDispatch } from '../../services/store';
 import { Preloader } from '../ui/preloader';
-import { selectIngredients } from '../../slice/IngredientSlice';
-import { useSelector } from '../../services/store';
+import { IngredientDetailsUI } from '../ui/ingredient-details';
+import { getIngredients, isLoadState } from '../../slice/IngredientSlice';
 
 export const IngredientDetails: FC = () => {
-  const navigate = useNavigate();
-  const params = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>();
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (!params.id) {
-      navigate('/', { replace: true });
-    }
-  }, []);
+  const ingredients = useSelector(getIngredients);
+  const isLoading = useSelector(isLoadState);
 
-  const ingredients = useSelector(selectIngredients);
-  const ingredientData = ingredients.find((item) => item._id === params.id);
+  const ingredientData = ingredients.find(
+    (ingredient) => ingredient._id === id
+  );
 
-  if (!ingredientData) {
+  if (isLoading || !ingredientData) {
     return <Preloader />;
   }
 

@@ -1,57 +1,73 @@
-import { FC } from 'react';
+import React, { FC } from 'react';
 import styles from './app-header.module.css';
 import { TAppHeaderUIProps } from './type';
-
 import {
   BurgerIcon,
   ListIcon,
   Logo,
   ProfileIcon
 } from '@zlden/react-developer-burger-ui-components';
-
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 
-export const AppHeaderUI: FC<TAppHeaderUIProps> = ({ userName }) => (
-  <header className={styles.header}>
-    <nav className={`${styles.menu} p-4`}>
-      <div className={styles.menu_part_left}>
-        <NavLink to='/' className={clsx(styles.navlink, 'mr-4', 'p-4')}>
-          {({ isActive }) => (
-            <div className={clsx(styles.link, isActive && styles.link_active)}>
-              <BurgerIcon type={isActive ? 'primary' : 'secondary'} />
-              <span className='text text_type_main-default ml-2'>
+export const AppHeaderUI: FC<TAppHeaderUIProps> = ({ userName }) => {
+  const location = useLocation();
+  const currentLocation = location.pathname;
+
+  return (
+    <header className={styles.header}>
+      <nav className={`${styles.menu} p-4`}>
+        <div className={styles.menu_part_left}>
+          <>
+            <NavLink
+              className={({ isActive }) =>
+                clsx(styles.link, isActive && styles.link_active)
+              }
+              to={'/'}
+            >
+              <BurgerIcon
+                type={currentLocation === '/' ? 'primary' : 'secondary'}
+              />
+              <p className='text text_type_main-default ml-2 mr-10'>
                 Конструктор
-              </span>
-            </div>
-          )}
+              </p>
+            </NavLink>
+          </>
+          <>
+            <NavLink
+              className={({ isActive }) =>
+                clsx(styles.link, isActive && styles.link_active)
+              }
+              to={'/feed'}
+            >
+              <ListIcon
+                type={currentLocation === '/feed' ? 'primary' : 'secondary'}
+              />
+              <p className='text text_type_main-default ml-2'>Лента заказов</p>
+            </NavLink>
+          </>
+        </div>
+        <NavLink className={styles.link} to={'/'}>
+          <div className={styles.logo}>
+            <Logo className='' />
+          </div>
         </NavLink>
-        <NavLink to='/feed' className={clsx(styles.navlink, 'p-4')}>
-          {({ isActive }) => (
-            <div className={clsx(styles.link, isActive && styles.link_active)}>
-              <ListIcon type={isActive ? 'primary' : 'secondary'} />
-              <span className='text text_type_main-default ml-2'>
-                Лента заказов
-              </span>
-            </div>
-          )}
-        </NavLink>
-      </div>
-      <div className={styles.logo}>
-        <Logo className='' />
-      </div>
-      <div className={styles.link_position_last}>
-        <NavLink to='/profile' className={clsx(styles.navlink, 'p-4')}>
-          {({ isActive }) => (
-            <div className={clsx(styles.link, isActive && styles.link_active)}>
-              <ProfileIcon type={isActive ? 'primary' : 'secondary'} />
-              <span className='text text_type_main-default ml-2'>
-                {userName || 'Личный кабинет'}
-              </span>
-            </div>
-          )}
-        </NavLink>
-      </div>
-    </nav>
-  </header>
-);
+        <div className={styles.link_position_last}>
+          <NavLink
+            className={({ isActive }) =>
+              clsx(styles.link, isActive && styles.link_active)
+            }
+            to={'/profile'}
+          >
+            <ProfileIcon
+              type={currentLocation === '/profile' ? 'primary' : 'secondary'}
+            />
+            <p className='text text_type_main-default ml-2'>
+              {userName || 'Личный кабинет'}
+            </p>
+          </NavLink>
+        </div>
+      </nav>
+    </header>
+  );
+};

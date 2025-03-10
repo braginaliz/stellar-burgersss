@@ -1,132 +1,109 @@
-import {
-  orderBurgerApi,
-  getFeedsApi,
-  getOrdersApi
-} from '../utils/burger-api';
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {
-  TOrder
-} from '@utils-types';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { orderBurgerApi, getOrdersApi } from '../../src/utils/burger-api';
+import { TOrder } from '@utils-types';
+import { clearConstructor } from './ConstructorSlice';
 
-
-
-type TInitialStateOrders = {
-  orders: TOrder[];
-  totalOrders: number;
-  ordersToday: number;
-  userOrders: TOrder[] | null;
+interface OrderState {
   orderRequest: boolean;
   orderModalData: TOrder | null;
-  isModalOpened: boolean;
-};
+  error: string | null | undefined;
+}
 
-const initialStateOrders: TInitialStateOrders = {
-  orders: [],
-  totalOrders: 0,
-  ordersToday: 0,
-  userOrders: null,
+interface OrdersState {
+  orders: TOrder[];
+  loading: boolean;
+  error: string | null;
+}
+
+export const initialOrderState: OrderState = {
   orderRequest: false,
   orderModalData: null,
-  isModalOpened: false,
+  error: undefined
 };
 
+export const initialOrdersState: OrdersState = {
+  orders: [],
+  loading: false,
+  error: null
+};
 
-export const fetchNewOrder = createAsyncThunk(
-  'orders/newOrder',
-  async (data: string[]) => orderBurgerApi(data)
+export const createOrder = createAsyncThunk(
+  'order/createOrder',
+  async (ingredients: string[], { dispatch, rejectWithValue }) => {
+    try {
+      const response = await orderBurgerApi(ingredients);
+      dispatch(clearConstructor());
+      return response;
+    } catch (error) {
+      return rejectWithValue('Не удалось создать заказ.');
+    }
+  }
 );
 
-export const fetchFeed = createAsyncThunk('user/feed', async () =>
-  getFeedsApi()
+export const fetchUserOrders = createAsyncThunk(
+  'orders/fetchUserOrders',
+  async (_, { rejectWithValue }) => {
+    try {
+      const orders = await getOrdersApi();
+      return orders;
+    } catch (error) {
+      return rejectWithValue('Не удалось загрузить заказы.');
+    }
+  }
 );
 
-export const fetchUserOrders = createAsyncThunk('user/orders', async () =>
-  getOrdersApi()
-);
-
-export const ordersSlice = createSlice({
-  name: 'orders',
-  initialState: initialStateOrders,
+export const combinedOrderSlice = createSlice({
+  name: 'combinedorder',
+  initialState: {
+    order: initialOrderState,
+    orders: initialOrdersState
+  },
   reducers: {
-    closeOrderRequest(state) {
-      state.orderRequest = false;
-      state.orderModalData = null;
-    },
-    removeOrders(state) {
-      state.orders.length = 0;
-    },
-    removeUserOrders(state) {
-      state.userOrders = null;
-    },
-    openModal(state) {
-      state.orderModalData = null; 
-    },
-    closeModal(state) {
-      state.isModalOpened = false;
-    },
+    clearOrderState: (state) => {
+      state.order.orderRequest = false;
+      state.order.orderModalData = null;
+      state.order.error = null;
+    }
   },
-  selectors: {
-   
-    selectOrderModalData: (state) => state.orderModalData,
-    selectOrderRequest: (state) => state.orderRequest,
-    selectOrders: (state) => state.orders,
-    selectTotalOrders: (state) => state.totalOrders,
-    selectTodayOrders: (state) => state.ordersToday,
-    selectUserOrders: (state) => state.userOrders,
-    selectIsModalOpened: (state) => state.isModalOpened,
-  },
-
-  
   extraReducers: (builder) => {
+    // Order reducers
     builder
-      .addCase(fetchNewOrder.pending, (state) => {
-        state.orderRequest = true;
+      .addCase(createOrder.pending, (state) => {
+        state.order.orderRequest = true;
+        state.order.error = null;
       })
-      .addCase(fetchNewOrder.rejected, (state) => {
-        state.orderRequest = false;
+      .addCase(createOrder.fulfilled, (state, action) => {
+        state.order.orderRequest = false;
+        state.order.orderModalData = action.payload.order;
+        state.order.error = null;
       })
-      .addCase(fetchNewOrder.fulfilled, (state, action) => {
-        state.orderModalData = action.payload.order;
-        state.orderRequest = false;
+      .addCase(createOrder.rejected, (state, action) => {
+        state.order.orderRequest = false;
+        state.order.error = action.payload as string;
       })
-      .addCase(fetchFeed.pending, (state) => {
-        state.orderRequest = true;
-      })
-      .addCase(fetchFeed.rejected, (state) => {
-        state.orderRequest = false;
-      })
-      .addCase(fetchFeed.fulfilled, (state, action) => {
-        state.orderRequest = false;
-        state.orders = action.payload.orders;
-        state.totalOrders = action.payload.total;
-        state.ordersToday = action.payload.totalToday;
-      })
+      // Orders reducers
       .addCase(fetchUserOrders.pending, (state) => {
-        state.orderRequest = true;
-      })
-      .addCase(fetchUserOrders.rejected, (state) => {
-        state.orderRequest = false;
+        state.orders.loading = true;
+        state.orders.error = null;
       })
       .addCase(fetchUserOrders.fulfilled, (state, action) => {
-        state.orderRequest = false;
-        state.userOrders = action.payload;
+        state.orders.loading = false;
+        state.orders.orders = action.payload;
+      })
+      .addCase(fetchUserOrders.rejected, (state, action) => {
+        state.orders.loading = false;
+        state.orders.error = action.payload as string;
       });
+  },
+  selectors: {
+    getOrderRequest: (state) => state.order.orderRequest,
+    getOrderModalData: (state) => state.order.orderModalData,
+    getOrders: (state) => state.orders.orders
   }
 });
 
+export const { clearOrderState } = combinedOrderSlice.actions;
+export const { getOrderRequest, getOrderModalData, getOrders } =
+  combinedOrderSlice.selectors;
 
-export const { 
-  closeOrderRequest, 
-  removeOrders, 
-  removeUserOrders, 
-  openModal ,
-  closeModal
-} = ordersSlice.actions;
-
-export const { selectOrderModalData,
-  selectOrderRequest,
-  selectOrders,
-  selectTotalOrders,
-  selectTodayOrders,
-  selectUserOrders,selectIsModalOpened} = ordersSlice.selectors;
-export default ordersSlice.reducer;
+export const combinedOrderReducer = combinedOrderSlice.reducer;

@@ -1,5 +1,12 @@
 import { useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import {
+  Routes,
+  Route,
+  useMatch,
+  useLocation,
+  BrowserRouter as Router,
+  useNavigate
+} from 'react-router-dom';
 import '../../index.css';
 import styles from './app.module.css';
 import {
@@ -13,35 +20,29 @@ import {
   Profile,
   ProfileOrders
 } from '@pages';
-import {
-  AppHeader,
-  IngredientDetails,
-  Modal,
-  OrderInfo
-} from '@components';
+import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
 
 import { OnlyAuth, OnlyUnAuth } from '../route/ProtectedRoute';
-import { useEffect } from 'react';
+import { getUser, getUserAuth } from '../../slice/UserSlice';
 import { useDispatch, useSelector } from '../../services/store';
-import { getUser, getUserAuth } from '../../slices/userSlice';
-
+import { fetchIngredients } from '../../slice/IngredientSlice';
 
 export const App = () => {
   const dispatch = useDispatch();
-  const Location = useLocation();
+  const location = useLocation();
   const navigate = useNavigate();
-  const backgroundLocation = location.state?.background;
-    const isAuthenticated = useSelector(getUserAuth);
+  const bgLocation = location.state?.background;
+  const isAuthenticated = useSelector(getUserAuth);
   const closeModal = () => {
     navigate(-1);
   };
-  
+
   const profileMatch = useMatch('/profile/orders/:number')?.params.number;
 
-    const feedMatch = useMatch('/feed/:number')?.params.number;
+  const feedMatch = useMatch('/feed/:number')?.params.number;
   const orderNumber = profileMatch || feedMatch;
 
-useEffect(() => {
+  useEffect(() => {
     if (!isAuthenticated) {
       dispatch(getUser()).then(() => {
         const lastPath = localStorage.getItem('lastPath');
@@ -53,12 +54,11 @@ useEffect(() => {
     dispatch(fetchIngredients());
   }, [dispatch, isAuthenticated, navigate]);
 
-
   return (
     <div className={styles.app}>
       <AppHeader />
-      <Routes location={backgroundLocation || location}>
-      <Route path='*' element={<NotFound404 />} />
+      <Routes location={bgLocation || location}>
+        <Route path='*' element={<NotFound404 />} />
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
         <Route path='/login' element={<OnlyUnAuth component={<Login />} />} />
@@ -75,15 +75,13 @@ useEffect(() => {
           element={<OnlyUnAuth component={<ResetPassword />} />}
         />
 
-         <Route
-          path='/profile'
-          element={<OnlyAuth component={< <Profile />} />}
-        />
- <Route
+        <Route path='/profile' element={<OnlyAuth component={<Profile />} />} />
+        <Route
           path='/profile/orders'
-          element={<OnlyAuth component={< <ProfileOrders />} />}
+          element={<OnlyAuth component={<ProfileOrders />} />}
         />
-            
+        <Route path='/profile/orders/:number' element={<OrderInfo />} />
+
         <Route
           path='/ingredients/:id'
           element={
@@ -95,28 +93,27 @@ useEffect(() => {
             </div>
           }
         />
-        <Route path='/feed/:number' element={<OrderInfo />} />
-        <Route path='/profile'>
-          <Route index element={<OnlyAuth component={<Profile />} />} />
-          <Route
-            path='orders'
-            element={<OnlyAuth component={<ProfileOrders />} />}
-          />
-        </Route>
+        <Route
+          path='/feed/:number'
+          element={
+            <div className={styles.detailPageWrap}>
+              <p className={`text text_type_main-large ${styles.detailHeader}`}>
+                #{orderNumber && orderNumber.padStart(6, '0')}
+              </p>
+              <OrderInfo />
+            </div>
+          }
+        />
+        <Route path='/*' element={<NotFound404 />} />
+        <Route path='/ingredients/:id' element={<IngredientDetails />} />
       </Routes>
 
-
-      {isModalOpened && backgroundLocation && (
+      {bgLocation && (
         <Routes>
           <Route
             path='/ingredients/:id'
             element={
-              <Modal
-                title={'Описание ингредиента'}
-                onClose={() => {
-                  dispatch(closeModal());
-                }}
-              >
+              <Modal title={'Описание ингредиента'} onClose={closeModal}>
                 <IngredientDetails />
               </Modal>
             }
@@ -124,26 +121,20 @@ useEffect(() => {
           <Route
             path='/profile/orders/:number'
             element={
-              <OnlyAuth
-                component={
-                  <Modal title={'Детали Заказа'} onClose={() => {
-                    dispatch(closeModal());
-                  }}
-                >
-                    <OrderInfo />
-                  </Modal>
-                }
-              />
+              <Modal
+                title={`#${location.pathname.match(/\d+/)}`}
+                onClose={() => navigate(-1)}
+              >
+                {<OnlyAuth component={<OrderInfo />} />}
+              </Modal>
             }
           />
           <Route
             path='/feed/:number'
             element={
               <Modal
-                title={'Заказ'}
-                onClose={() => {
-                  dispatch(closeModal());
-                }}
+                title={`Детали заказа #${orderNumber}`}
+                onClose={closeModal}
               >
                 <OrderInfo />
               </Modal>
@@ -154,3 +145,5 @@ useEffect(() => {
     </div>
   );
 };
+
+export default App;
